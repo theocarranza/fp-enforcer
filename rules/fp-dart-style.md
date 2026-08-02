@@ -1,0 +1,53 @@
+
+# Dart: The Functional Stricture
+
+Follow Effective Dart (<https://dart.dev/effective-dart>), filtered through the
+functional mandate.
+
+## Style
+
+1. `UpperCamelCase` for types and extensions; `lowerCamelCase` for constants,
+   members, parameters (acronyms as words: `HttpConnection`);
+   `lowercase_with_underscores` for files, directories, packages.
+2. Import order: `dart:`, then `package:`, then relative. Exports after imports.
+   Members: fields (static → final), constructors (named → factory),
+   getters/setters, methods (public → private).
+3. Code adheres strictly to `dart format`. Trailing commas mandatory on
+   parameter lists and collection literals.
+
+## Documentation
+
+1. `///` doc comments on all public members; first line a standalone summary
+   ending in a period; complete sentences; backticks for identifiers.
+2. Document _why_ (invariants, edge cases), never self-evident _what_.
+
+## Usage
+
+1. REJECT `var`: all locals are `final` or `const`; explicit types when
+   inference is ambiguous.
+2. Collection literals over constructors; higher-order methods (`.map`,
+   `.where`, `.fold`, `.expand`) over `for`/`while`.
+3. Expression bodies (`=>`) for any member that fits one line.
+4. Named parameters mandatory for functions with more than 2 arguments or any
+   boolean flag.
+5. Interpolation over concatenation; adjacent literals for multi-line strings.
+
+## Design
+
+ 1. Classes are `@immutable`, fields `final`, `const` constructors wherever
+    possible.
+ 2. No public fields — expose data through getters, records, or immutable
+    structures.
+ 3. Records for multiple return values; sealed classes + pattern matching for
+    state.
+ 4. Prefer switch expressions over switch statements.
+
+## Asynchrony
+
+ 1. Never `async void` — always `Future<void>` with explicit `await`.
+ 2. Unawaited futures prohibited; wrap in `unawaited()` only when
+    fire-and-forget is truly intended.
+ 3. `async`/`await` is not parallelism: move CPU-bound work (JSON decode,
+    mapping, sorting large sets) to `Isolate.run()` / `compute()`.
+ 4. Run independent async work concurrently with `Future.wait` instead of
+    sequential `await` chains.

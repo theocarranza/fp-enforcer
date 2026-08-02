@@ -1,0 +1,39 @@
+{
+  "rules": [
+    {
+      "file": "fp-core.md",
+      "description": "Core functional programming paradigm, mandatory for all code in any language",
+      "alwaysApply": true
+    },
+    {
+      "file": "fp-dart-style.md",
+      "description": "Dart style and design rules under the functional paradigm (Effective Dart, strictly filtered)",
+      "globs": "**/*.dart",
+      "alwaysApply": false
+    },
+    {
+      "file": "fp-dartz.md",
+      "description": "Dartz usage rules — Either, Option, Task discipline for the functional core",
+      "globs": "**/*.dart",
+      "alwaysApply": false
+    },
+    {
+      "file": "fp-rxdart.md",
+      "description": "RxDart reactive composition and memory-safety rules",
+      "globs": "**/*.dart",
+      "alwaysApply": false
+    },
+    {
+      "file": "fp-flutter.md",
+      "description": "Flutter architecture rules — widget purity, state management, performance",
+      "globs": "**/*.dart",
+      "alwaysApply": false
+    },
+    {
+      "file": "fp-typescript.md",
+      "description": "Functional TypeScript rules — immutability, expression-based lookups, typed seams",
+      "globs": "**/*.ts",
+      "alwaysApply": false
+    }
+  ]
+}

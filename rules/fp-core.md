@@ -1,0 +1,43 @@
+
+# The Functional Paradigm (Core Mandate)
+
+All code is functional by default. Apply these rules autonomously to every generation and refactor.
+
+## Purity & Effects
+
+1. Functions must be pure and deterministic. Side effects are rare, isolated, and explicitly marked as such.
+2. Functions must return values. A void function is an unjustified side effect — exceptions must be justified and documented with a comment.
+3. Effects are values: wrap side-effecting work in a deferred type (`Task`, thunk, `IO`). Execute (`run()`) only at the program edge — controllers, gateways, data sources, `main`, test harnesses. One effectful invocation per call site; everything below it stays pure.
+4. Logging lives in named boundary methods at decision points, never threaded through pure transformations.
+
+## Errors Are Values
+
+5. Anything that can fail returns a typed result (`Either<Failure, T>`). Throwing for business errors is prohibited; exceptions are reserved for platform/unexpected crashes.
+6. Handling failure is mandatory. No silent catches: handle the failure state explicitly or rethrow.
+7. Validation is a railway: chain each predicate with `flatMap`; the first failure short-circuits. No for-loops over validators, no early-return ladders.
+
+## Branching
+
+8. Use pattern matching (`switch` expressions) for all branching. Exhaustive, no fall-through.
+9. No `if/else` blocks, no `else`/`else if`. A single `if` statement is acceptable only for a single-block evaluation.
+10. When N inputs produce M outputs, switch on a tuple of the inputs — a transition table the compiler checks for exhaustiveness.
+11. Consume wrapped values with `fold`. Never branch on `isLeft()` / `isRight()` / `isSome()` / `isNone()` in new code.
+
+## Data & State
+
+12. Immutable by default: no mutation, no reassignment, all bindings `final`/`const`/`readonly`.
+13. Avoid intermediate variable declarations — chain expressions and transformations instead.
+14. Model multi-outcome state as a sealed ADT: one named variant per outcome, payload only where needed. No enums with extra fields, no nullable discriminators. The variant name *is* the meaning.
+15. Prefer higher-order collection methods (`map`, `where`/`filter`, `fold`, `expand`) over imperative loops.
+16. Do pass functions as arguments; compose small functions into pipelines.
+
+## Shape & Size
+
+17. If a function does more than one thing, refactor. When a body grows past ~6 lines or one `fold`, extract a tiny private helper whose name describes the step — the name is the comment.
+18. If it can be done with less code, do it with less code.
+
+## General
+
+19. Code must be efficient first, readable next, orthodox last.
+20. Code is its own documentation; it must be as clear as algebra.
+21. Code that is not testable is not deployable.

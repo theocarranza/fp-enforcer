@@ -1,0 +1,13 @@
+{
+  "language": "dart",
+  "suffixes": [".dart"],
+  "exclude_suffixes": [".g.dart", ".freezed.dart", ".gr.dart", ".mocks.dart"],
+  "patterns": [
+    {"id": "fold-not-unwrap", "regex": "\\.isLeft\\(\\)|\\.isRight\\(\\)|\\.isSome\\(\\)|\\.isNone\\(\\)", "message": "consume wrapped values with .fold() instead of unwrapping", "rule": "fp-core 11 / fp-dartz 2"},
+    {"id": "no-else", "regex": "\\belse\\b", "message": "no else branches: use switch expressions or fold", "rule": "fp-core 8-9"},
+    {"id": "no-var", "regex": "^\\s*var\\s", "message": "no var: use final/const", "rule": "fp-dart-style usage 1"},
+    {"id": "no-try-catch", "regex": "\\btry\\s*\\{", "message": "no try/catch in business logic: wrap effects in Task(...).attempt(); justified only in data-source internals", "rule": "fp-dartz 7"},
+    {"id": "no-tuple-return", "regex": "\\bTuple[0-9]", "message": "no Tuple returns: use a record or named class", "rule": "fp-dartz 13"},
+    {"id": "no-async-void", "regex": "void\\s+\\w+\\s*\\([^)]*\\)\\s*async\\b", "message": "no async void: return Future<void>", "rule": "fp-dart-style asynchrony 1"}
+  ]
+}

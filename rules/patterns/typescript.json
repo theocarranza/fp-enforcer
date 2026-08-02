@@ -1,0 +1,11 @@
+{
+  "language": "typescript",
+  "suffixes": [".ts", ".tsx"],
+  "exclude_suffixes": [".d.ts"],
+  "patterns": [
+    {"id": "no-let", "regex": "^\\s*let\\s", "message": "const only: no let, no mutation", "rule": "fp-typescript 1"},
+    {"id": "no-var", "regex": "^\\s*var\\s", "message": "const only: no var", "rule": "fp-typescript 1"},
+    {"id": "no-else", "regex": "\\belse\\b", "message": "no else branches: use expression lookups or pattern-matched returns", "rule": "fp-core 8-9"},
+    {"id": "no-throw-internal", "regex": "\\bthrow\\s", "message": "errors are values internally; typed errors only at the outermost edge", "rule": "fp-typescript 5"}
+  ]
+}
