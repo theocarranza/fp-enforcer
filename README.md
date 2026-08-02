@@ -1,5 +1,12 @@
 # fp-enforcer
 
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
+![Dependencies](https://img.shields.io/badge/dependencies-stdlib%20only-success)
+![Tests](https://img.shields.io/badge/tests-31%20passing-brightgreen)
+![Paradigm](https://img.shields.io/badge/paradigm-functional-8A2BE2)
+![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-E05735)
+
 Real-time enforcement of the functional programming paradigm for agent-driven
 codebases. fp-enforcer ships a canonical rule set, a violation scanner, agent
 hooks, and skills that let coding agents **enforce**, **validate**, **repair**,
