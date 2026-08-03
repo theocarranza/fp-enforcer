@@ -3,7 +3,7 @@
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Dependencies](https://img.shields.io/badge/dependencies-stdlib%20only-success)
-![Tests](https://img.shields.io/badge/tests-31%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)
 ![Paradigm](https://img.shields.io/badge/paradigm-functional-8A2BE2)
 ![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-E05735)
 
@@ -64,6 +64,21 @@ git diff | python3 -m fp_enforcer validate --diff -
 # Generate FP library knowledge profiles for agents
 python3 -m fp_enforcer learn --dest /path/to/project
 ```
+
+### Suppressing a justified exception
+
+Tripwire patterns can over-fire on constructs the rules themselves permit
+(e.g. `CompositeSubscription.add`, edge throws). Waive a pattern inline with a
+directive naming the pattern ids — on the violating line or the comment line
+directly above it:
+
+```dart
+// fp-allow: no-collection-mutation — disposal binding, fp-rxdart memory 1
+composite.add(subscription);
+```
+
+Every suppression is grep-able (`grep -r "fp-allow"`), keeping exceptions
+explicit and auditable, as fp-core requires.
 
 ## Layout
 
