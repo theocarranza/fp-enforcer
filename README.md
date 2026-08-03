@@ -3,7 +3,7 @@
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Dependencies](https://img.shields.io/badge/dependencies-stdlib%20only-success)
-![Tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-70%20passing-brightgreen)
 ![Paradigm](https://img.shields.io/badge/paradigm-functional-8A2BE2)
 ![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-E05735)
 
@@ -20,6 +20,7 @@ and **learn** functional programming discipline on any project.
 | Validate | `python3 -m fp_enforcer validate` lints files, unified diffs, or entire trees against machine-readable pattern packs. |
 | Repair | The `fp-repair` skill converts a validation report into an ordered, rule-linked fix procedure the agent executes. |
 | Learn | `python3 -m fp_enforcer learn` detects FP libraries in a project (dartz, fpdart, rxdart, fp-ts, ...) and generates agent-facing knowledge profiles. |
+| Assimilate | `python3 -m fp_enforcer assimilate` activates curated library/language-feature pattern packs detected in the project, gated by embedded self-tests. |
 
 ## Design
 
@@ -63,6 +64,9 @@ git diff | python3 -m fp_enforcer validate --diff -
 
 # Generate FP library knowledge profiles for agents
 python3 -m fp_enforcer learn --dest /path/to/project
+
+# Activate curated pattern packs for detected FP libraries/features
+python3 -m fp_enforcer assimilate --dest /path/to/project
 ```
 
 ### Suppressing a justified exception

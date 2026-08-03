@@ -1,0 +1,20 @@
+{
+  "library": "rxjs",
+  "language": "typescript",
+  "suffixes": [".ts", ".tsx"],
+  "exclude_suffixes": [".d.ts"],
+  "patterns": [
+    {"id": "no-manual-subscribe", "regex": "\\.subscribe\\s*\\(", "message": "compose declaratively; subscribe only at the edge with takeUntil or managed Subscription disposal", "rule": "fp-rxdart 1 / rxjs profile"},
+    {"id": "no-unbounded-replay-ts", "regex": "new\\s+ReplaySubject\\s*<[^>]*>\\s*\\(\\s*\\)", "message": "ReplaySubject requires an explicit bufferSize bound", "rule": "fp-rxdart memory 2 / rxjs profile"}
+  ],
+  "self_test": {
+    "violations": [
+      "source$.pipe(map(load)).subscribe((value) => render(value));",
+      "const bus = new ReplaySubject<string>();"
+    ],
+    "clean": [
+      "const sub = source$.pipe(takeUntil(destroy$)).subscribe(render); // fp-allow: no-manual-subscribe — edge disposal, rxjs profile",
+      "const bus = new ReplaySubject<string>(5);"
+    ]
+  }
+}
