@@ -148,6 +148,51 @@ class RunTests(unittest.TestCase):
             self.assertIn("malformed pack JSON", report.gate_failures[0])
             self.assertEqual([item.pack_id for item in report.activated], ["rxjs"])
 
+    def test_invalid_regex_curated_pack_fails_gate_without_blocking_others(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "src"
+            library_dir = source / "rules" / "patterns" / "libraries"
+            library_dir.mkdir(parents=True)
+            payload = {
+                "feature": "dart3",
+                "language": "dart",
+                "suffixes": [".dart"],
+                "exclude_suffixes": [],
+                "patterns": [
+                    {
+                        "id": "bad-regex",
+                        "regex": "([unclosed",
+                        "message": "m",
+                        "rule": "r",
+                    }
+                ],
+                "self_test": {"violations": [], "clean": []},
+            }
+            (library_dir / "dart3.json").write_text(
+                json.dumps(payload), encoding="utf-8"
+            )
+            (library_dir / "rxjs.json").write_text(
+                (assimilate.SOURCE_ROOT / "rules/patterns/libraries/rxjs.json").read_text(
+                    encoding="utf-8"
+                ),
+                encoding="utf-8",
+            )
+            dest = Path(tmp) / "dest"
+            dest.mkdir()
+            (dest / "pubspec.yaml").write_text(
+                "name: app\nenvironment:\n  sdk: ^3.4.0\n", encoding="utf-8"
+            )
+            (dest / "package.json").write_text(
+                json.dumps({"dependencies": {"rxjs": "^7.0.0"}}),
+                encoding="utf-8",
+            )
+            report = assimilate.run(dest, source_root=source)
+            self.assertEqual(len(report.gate_failures), 1)
+            self.assertIn("dart3", report.gate_failures[0])
+            self.assertEqual([item.pack_id for item in report.activated], ["rxjs"])
+
     def test_gate_failure_blocks_activation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             source = Path(tmp) / "src"

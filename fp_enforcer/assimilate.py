@@ -106,7 +106,7 @@ def _load_pack_for_gate(
             )
     try:
         return ((), raw, validate.load_pack(path))
-    except (AttributeError, KeyError, TypeError) as exc:
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
         return ((f"malformed pack: {exc}",), None, None)
 
 
