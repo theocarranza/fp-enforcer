@@ -11,6 +11,7 @@
   "repository": "https://github.com/theocarranza/fp-enforcer",
   "license": "MIT",
   "keywords": ["functional-programming", "linting", "code-quality"],
+  "logo": "./assets/logo.png",
   "skills": [
     "./fp_enforcer/skills/fp-validate",
     "./fp_enforcer/skills/fp-repair",
