@@ -4,7 +4,7 @@
   "suffixes": [".ts", ".tsx"],
   "exclude_suffixes": [".d.ts"],
   "patterns": [
-    {"id": "no-manual-subscribe", "regex": "\\.subscribe\\s*\\(", "message": "compose declaratively; subscribe only at the edge with takeUntil or managed Subscription disposal", "rule": "fp-rxdart 1 / rxjs profile"},
+    {"id": "no-manual-subscribe", "regex": "\\.subscribe\\s*\\(", "message": "compose declaratively; subscribe only at the edge with takeUntil or managed Subscription disposal", "rule": "fp-rxdart stream 1 / rxjs profile"},
     {"id": "no-unbounded-replay-ts", "regex": "new\\s+ReplaySubject\\s*<[^>]*>\\s*\\(\\s*\\)", "message": "ReplaySubject requires an explicit bufferSize bound", "rule": "fp-rxdart memory 2 / rxjs profile"}
   ],
   "self_test": {

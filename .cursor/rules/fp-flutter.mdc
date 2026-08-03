@@ -4,7 +4,6 @@ globs: **/*.dart
 alwaysApply: false
 ---
 
-
 # Flutter: Pure Presentation
 
 ## Widget Purity
@@ -16,14 +15,14 @@ alwaysApply: false
 
 ## State Management
 
-5. Ephemeral UI state (animations, scroll controllers): `flutter_hooks`.
-6. Shared business state: the project's chosen container (Provider / Riverpod / GetX) — logic stays functional inside it.
-7. Render complex UI state by exhaustively switching over a sealed state ADT.
-8. Give state classes value equality (`Equatable`, records, or sealed data classes) — reference comparison triggers spurious rebuilds.
+1. Ephemeral UI state (animations, scroll controllers): `flutter_hooks`.
+2. Shared business state: the project's chosen container (Provider / Riverpod / GetX) — logic stays functional inside it.
+3. Render complex UI state by exhaustively switching over a sealed state ADT.
+4. Give state classes value equality (`Equatable`, records, or sealed data classes) — reference comparison triggers spurious rebuilds.
 
 ## Performance
 
-9. The 16ms frame budget covers all Dart execution: parsing and mapping jank comes from the data layer, not the widget tree. Offload heavy `.map().where().toList()..sort()` chains to `Isolate.run()`/`compute()`.
-10. Startup: parallelize independent init with `Future.wait`; defer non-critical work with `addPostFrameCallback`; prefetch images concurrently.
-11. Always `ListView.builder` for large datasets (`itemExtent` when height is fixed); cursor-based pagination with ~200–400px prefetch.
-12. Heavy boolean getters short-circuit with `||`/`&&` instead of list processing (`.any`, `.reduce`).
+1. The 16ms frame budget covers all Dart execution: parsing and mapping jank comes from the data layer, not the widget tree. Offload heavy `.map().where().toList()..sort()` chains to `Isolate.run()`/`compute()`.
+2. Startup: parallelize independent init with `Future.wait`; defer non-critical work with `addPostFrameCallback`; prefetch images concurrently.
+3. Always `ListView.builder` for large datasets (`itemExtent` when height is fixed); cursor-based pagination with ~200–400px prefetch.
+4. Heavy boolean getters short-circuit with `||`/`&&` instead of list processing (`.any`, `.reduce`).

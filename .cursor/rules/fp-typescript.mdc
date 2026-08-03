@@ -4,7 +4,6 @@ globs: **/*.ts
 alwaysApply: false
 ---
 
-
 # TypeScript: Functional Seams
 
 The core paradigm rule applies in full. TypeScript specifics:
