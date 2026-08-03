@@ -88,14 +88,25 @@ def _load_pack_for_gate(
     path: Path,
 ) -> tuple[tuple[str, ...], dict[str, object] | None, PatternPack | None]:
     try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
+        parsed = json.loads(path.read_text(encoding="utf-8"))
     except OSError as exc:
         return ((f"unreadable pack: {exc}",), None, None)
     except json.JSONDecodeError as exc:
         return ((f"malformed pack JSON: {exc}",), None, None)
+    match parsed:
+        case dict() as raw:
+            pass
+        case _:
+            return (
+                (
+                    f"malformed pack JSON: expected object, got {type(parsed).__name__}",
+                ),
+                None,
+                None,
+            )
     try:
         return ((), raw, validate.load_pack(path))
-    except (KeyError, TypeError) as exc:
+    except (AttributeError, KeyError, TypeError) as exc:
         return ((f"malformed pack: {exc}",), None, None)
 
 
