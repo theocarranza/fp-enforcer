@@ -68,9 +68,15 @@ def select_packs(source_root: Path, ids: tuple[str, ...]) -> tuple[Path, ...]:
 def _self_test_failures(pack: PatternPack, raw: dict[str, object]) -> tuple[str, ...]:
     match raw.get("self_test"):
         case dict() as cases:
-            pass
+            violations = cases.get("violations", ())
+            clean = cases.get("clean", ())
+            match (violations, clean):
+                case (list() | tuple() as v, list() | tuple() as c) if v or c:
+                    pass
+                case _:
+                    return ("no self_test",)
         case _:
-            return ()
+            return ("no self_test",)
     missed = tuple(
         f"missed violation: {code}"
         for code in cases.get("violations", ())
