@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Multi-pack scanning: `packs_for` matches every applicable pack per file
+  with deduped violations, and `load_packs` picks up a `learned/`
+  subdirectory of activated packs.
+- `python3 -m fp_enforcer assimilate`: detects FP libraries and language
+  features (Dart SDK constraint), activates curated packs from
+  `rules/patterns/libraries/` into the project's
+  `.fp-enforcer/rules/patterns/learned/`, fail-closed on each pack's
+  embedded self-test.
+- Curated packs for `rxjs` (no-manual-subscribe, no-unbounded-replay-ts)
+  and `dart3` (prefer-switch-expression).
+- `fp-assimilate` skill with the activation workflow and the manual
+  pack-authoring path for uncurated libraries.
 - New Dart patterns: no-for-loop, no-throw-domain, no-reassignment,
   no-mutable-field, no-late, no-collection-mutation, no-stateful-widget,
   no-manual-listen, no-unbounded-replay — `fp-flutter` and `fp-rxdart` rules
