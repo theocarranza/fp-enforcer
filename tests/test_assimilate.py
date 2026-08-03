@@ -180,3 +180,13 @@ class RunTests(unittest.TestCase):
             self.assertEqual(report.activated, ())
             self.assertEqual(len(report.gate_failures), 1)
             self.assertIn("dart3", report.gate_failures[0])
+
+
+class CuratedPackTests(unittest.TestCase):
+    def test_every_curated_pack_passes_its_self_test(self) -> None:
+        failures = tuple(
+            failure
+            for path in assimilate.curated_pack_paths(assimilate.SOURCE_ROOT)
+            for failure in assimilate.pack_self_test_failures(path)
+        )
+        self.assertEqual(failures, ())
