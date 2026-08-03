@@ -99,6 +99,66 @@ class ValidateScanTextTests(unittest.TestCase):
         )
 
 
+class CommentStrippingTests(unittest.TestCase):
+    def test_trailing_comment_not_scanned(self) -> None:
+        pack = _dart_pack()
+        text = "final ok = 1; // else var isLeft()\n"
+        self.assertEqual(validate.scan_text(pack, text, "a.dart"), ())
+
+    def test_block_comment_spanning_lines_not_scanned(self) -> None:
+        pack = _dart_pack()
+        text = "/*\nelse var\n*/\nfinal ok = 1;\n"
+        self.assertEqual(validate.scan_text(pack, text, "a.dart"), ())
+
+    def test_inline_block_comment_removed_but_code_kept(self) -> None:
+        pack = _dart_pack()
+        text = "final ok = /* else */ 1;\nvar count = 0;\n"
+        violations = validate.scan_text(pack, text, "a.dart")
+        self.assertEqual([item.pattern_id for item in violations], ["no-var"])
+
+    def test_url_string_does_not_hide_code(self) -> None:
+        pack = _dart_pack()
+        text = "final u = 'https://x.dev';\nvar count = 0;\n"
+        violations = validate.scan_text(pack, text, "a.dart")
+        self.assertEqual([item.pattern_id for item in violations], ["no-var"])
+
+
+class SuppressionTests(unittest.TestCase):
+    def test_fp_allow_suppresses_named_pattern(self) -> None:
+        pack = _dart_pack()
+        text = "var count = 0; // fp-allow: no-var\n"
+        self.assertEqual(validate.scan_text(pack, text, "a.dart"), ())
+
+    def test_fp_allow_does_not_suppress_other_patterns(self) -> None:
+        pack = _dart_pack()
+        text = "var count = 0; // fp-allow: no-else\n"
+        violations = validate.scan_text(pack, text, "a.dart")
+        self.assertEqual([item.pattern_id for item in violations], ["no-var"])
+
+    def test_fp_allow_comma_separated(self) -> None:
+        pack = _dart_pack()
+        text = "} else { var count = 0; } // fp-allow: no-else, no-var\n"
+        self.assertEqual(validate.scan_text(pack, text, "a.dart"), ())
+
+    def test_fp_allow_on_preceding_comment_line(self) -> None:
+        pack = _dart_pack()
+        text = "// fp-allow: no-var — justified\nvar count = 0;\nvar other = 1;\n"
+        violations = validate.scan_text(pack, text, "a.dart")
+        self.assertEqual([item.line for item in violations], [3])
+
+    def test_fp_allow_applies_in_diffs(self) -> None:
+        packs = (_dart_pack(),)
+        diff = "\n".join(
+            [
+                "--- a/lib/sample.dart",
+                "+++ b/lib/sample.dart",
+                "@@ -0,0 +1,1 @@",
+                "+var count = 0; // fp-allow: no-var",
+            ]
+        )
+        self.assertEqual(validate.scan_diff(packs, diff), ())
+
+
 class PackForTests(unittest.TestCase):
     def test_excludes_generated_suffix(self) -> None:
         packs = (_dart_pack(),)

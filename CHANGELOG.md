@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New Dart patterns: no-for-loop, no-throw-domain, no-reassignment,
+  no-mutable-field, no-late, no-collection-mutation, no-stateful-widget,
+  no-manual-listen, no-unbounded-replay — `fp-flutter` and `fp-rxdart` rules
+  now have pattern coverage.
+- New TypeScript patterns: no-or-fallback, no-for-loop,
+  no-collection-mutation, no-field-write.
+- Inline suppression: `// fp-allow: <pattern-id>` on the violating line or
+  the comment line directly above waives named patterns, keeping justified
+  exceptions explicit and auditable.
+- Comment-aware scanning: line and block comments are stripped before
+  pattern matching (block state tracked across lines), and string literals
+  are respected so a `//` inside a string no longer truncates the line.
+- Test harness (`tests/harness/`): violation fixtures per rule area with
+  hermetic library stubs (`tests/harness/stubs/`, `.g.dart`-excluded),
+  suppression fixtures, and clean fixtures (rule-compliant code that must
+  produce zero violations); regression-check with
+  `python3 -m fp_enforcer validate tests/harness`.
+- Harness regression tests (`tests/test_harness.py`): pin exact pattern ids
+  per violation fixture (recall) and zero-violation guarantees for clean,
+  suppression, and stub fixtures (precision).
+
+### Changed
+
+- no-var/no-let widened from line-anchored to word-boundary matching,
+  catching `for (var x in ...)` / `for (let i ...)` forms.
+- no-throw-internal/no-throw-domain allowlist crash-only exception types
+  (`HttpsError`, `UnimplementedError`, `UnsupportedError`, `AssertionError`)
+  that the rules reserve for the platform/edge.
+- no-field-write excludes `this.` receivers, so idiomatic constructor
+  initialization no longer trips it.
+- no-reassignment and no-field-write exclude the `=>` arrow, so switch
+  expression arms (e.g. `_ => 'bronze'`) no longer trip them.
+- Unit test suite grew to 44 tests.
+
 ## [0.1.0] - 2026-08-02
 
 ### Added

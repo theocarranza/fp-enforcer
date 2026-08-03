@@ -87,10 +87,60 @@ def pack_for(
     return None
 
 
+_COMMENT_OR_STRING = re.compile(
+    r"'(?:\\.|[^'\\])*'"
+    r'|"(?:\\.|[^"\\])*"'
+    r"|(?P<line>//)"
+    r"|(?P<block>/\*)"
+)
+
+_ALLOW_DIRECTIVE = re.compile(r"fp-allow:\s*([a-z0-9-]+(?:\s*,\s*[a-z0-9-]+)*)")
+
+
+def _first_comment_token(line_text: str) -> re.Match[str] | None:
+    return next(
+        (
+            token
+            for token in _COMMENT_OR_STRING.finditer(line_text)
+            if token.lastgroup in ("line", "block")
+        ),
+        None,
+    )
+
+
+def _strip_comments(in_block: bool, line_text: str) -> tuple[str, bool]:
+    match in_block:
+        case True:
+            match line_text.find("*/"):
+                case -1:
+                    return ("", True)
+                case end:
+                    return _strip_comments(False, line_text[end + 2 :])
+        case False:
+            match _first_comment_token(line_text):
+                case None:
+                    return (line_text, False)
+                case token if token.lastgroup == "line":
+                    return (line_text[: token.start()], False)
+                case token:
+                    head = line_text[: token.start()]
+                    tail, still_open = _strip_comments(True, line_text[token.end() :])
+                    return (head + tail, still_open)
+
+
+def _allowed_ids(line_text: str) -> frozenset[str]:
+    match _ALLOW_DIRECTIVE.search(line_text):
+        case None:
+            return frozenset()
+        case directive:
+            return frozenset(re.split(r"\s*,\s*", directive.group(1)))
+
+
 def _scan_line(
     path: str,
     line_number: int,
-    line_text: str,
+    code_text: str,
+    allowed: frozenset[str],
     pack: PatternPack,
     compiled: tuple[re.Pattern[str], ...],
 ) -> tuple[Violation, ...]:
@@ -103,17 +153,23 @@ def _scan_line(
             rule=pattern.rule,
         )
         for pattern, regex in zip(pack.patterns, compiled, strict=True)
-        if regex.search(line_text) is not None
+        if pattern.id not in allowed and regex.search(code_text) is not None
     )
 
 
 def scan_text(pack: PatternPack, text: str, path: str) -> tuple[Violation, ...]:
     compiled = tuple(re.compile(pattern.regex) for pattern in pack.patterns)
-    return tuple(
-        violation
-        for line_number, line_text in enumerate(text.splitlines(), start=1)
-        for violation in _scan_line(path, line_number, line_text, pack, compiled)
-    )
+    violations: tuple[Violation, ...] = ()
+    in_block = False
+    pending: frozenset[str] = frozenset()
+    for line_number, line_text in enumerate(text.splitlines(), start=1):
+        code_text, in_block = _strip_comments(in_block, line_text)
+        allowed = pending | _allowed_ids(line_text)
+        violations = violations + _scan_line(
+            path, line_number, code_text, allowed, pack, compiled
+        )
+        pending = allowed if code_text.strip() == "" else frozenset()
+    return violations
 
 
 def scan_file(
@@ -186,7 +242,10 @@ def _scan_added_line(
     content: str,
 ) -> tuple[Violation, ...]:
     compiled = tuple(re.compile(pattern.regex) for pattern in pack.patterns)
-    return _scan_line(target_path, new_line, content, pack, compiled)
+    code_text, _ = _strip_comments(False, content)
+    return _scan_line(
+        target_path, new_line, code_text, _allowed_ids(content), pack, compiled
+    )
 
 
 def _process_diff_line(
