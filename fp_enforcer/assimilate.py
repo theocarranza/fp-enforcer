@@ -13,7 +13,9 @@ from fp_enforcer.core import PatternPack
 
 SOURCE_ROOT = Path(__file__).resolve().parent.parent
 
-_SDK_CONSTRAINT = re.compile(r"^\s+sdk:\s*[\"']?\^?(\d+)\.", re.MULTILINE)
+_SDK_CONSTRAINT = re.compile(
+    r"^\s+sdk:\s*[\"']?(?:\^|>=)?(\d+)\.", re.MULTILINE
+)
 
 
 @dataclass(frozen=True)

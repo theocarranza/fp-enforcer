@@ -27,6 +27,24 @@ class DetectLanguageFeaturesTests(unittest.TestCase):
             )
             self.assertEqual(assimilate.detect_language_features(root), ())
 
+    def test_dart3_detected_from_range_sdk_constraint(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "pubspec.yaml").write_text(
+                'name: app\nenvironment:\n  sdk: ">=3.0.0 <4.0.0"\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(assimilate.detect_language_features(root), ("dart3",))
+
+    def test_dart2_range_sdk_constraint_yields_no_features(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "pubspec.yaml").write_text(
+                "name: app\nenvironment:\n  sdk: '>=2.19.0 <3.0.0'\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(assimilate.detect_language_features(root), ())
+
     def test_missing_pubspec_yields_no_features(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(assimilate.detect_language_features(Path(tmp)), ())
