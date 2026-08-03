@@ -62,15 +62,44 @@ class RunTests(unittest.TestCase):
                 sorted(item.pack_id for item in report.activated),
                 ["dart3", "rxjs"],
             )
+            learned_dir = root / ".fp-enforcer" / "rules" / "patterns" / "learned"
             for item in report.activated:
                 self.assertTrue(item.path.is_file())
-                self.assertIn("learned", item.path.parts)
+                self.assertEqual(item.path.parent, learned_dir)
 
     def test_run_with_no_libraries_activates_nothing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             report = assimilate.run(Path(tmp))
             self.assertEqual(report.activated, ())
             self.assertEqual(report.gate_failures, ())
+
+    def test_malformed_curated_pack_fails_gate_without_blocking_others(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "src"
+            library_dir = source / "rules" / "patterns" / "libraries"
+            library_dir.mkdir(parents=True)
+            (library_dir / "dart3.json").write_text(
+                '{"feature": "dart3", "language": "dart",', encoding="utf-8"
+            )
+            (library_dir / "rxjs.json").write_text(
+                (assimilate.SOURCE_ROOT / "rules/patterns/libraries/rxjs.json").read_text(
+                    encoding="utf-8"
+                ),
+                encoding="utf-8",
+            )
+            dest = Path(tmp) / "dest"
+            dest.mkdir()
+            (dest / "pubspec.yaml").write_text(
+                "name: app\nenvironment:\n  sdk: ^3.4.0\n", encoding="utf-8"
+            )
+            (dest / "package.json").write_text(
+                json.dumps({"dependencies": {"rxjs": "^7.0.0"}}),
+                encoding="utf-8",
+            )
+            report = assimilate.run(dest, source_root=source)
+            self.assertEqual(len(report.gate_failures), 1)
+            self.assertIn("dart3", report.gate_failures[0])
+            self.assertEqual([item.pack_id for item in report.activated], ["rxjs"])
 
     def test_gate_failure_blocks_activation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

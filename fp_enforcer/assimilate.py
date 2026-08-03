@@ -82,9 +82,30 @@ def _self_test_failures(pack: PatternPack, raw: dict[str, object]) -> tuple[str,
     return missed + noisy
 
 
+def _load_pack_for_gate(
+    path: Path,
+) -> tuple[tuple[str, ...], dict[str, object] | None, PatternPack | None]:
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        return ((f"unreadable pack: {exc}",), None, None)
+    except json.JSONDecodeError as exc:
+        return ((f"malformed pack JSON: {exc}",), None, None)
+    try:
+        return ((), raw, validate.load_pack(path))
+    except (KeyError, TypeError) as exc:
+        return ((f"malformed pack: {exc}",), None, None)
+
+
 def pack_self_test_failures(path: Path) -> tuple[str, ...]:
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    return _self_test_failures(validate.load_pack(path), raw)
+    load_failures, raw, pack = _load_pack_for_gate(path)
+    match (load_failures, raw, pack):
+        case (failures, _, _) if failures:
+            return failures
+        case ((), dict() as parsed, PatternPack() as loaded):
+            return _self_test_failures(loaded, parsed)
+        case _:
+            return ()
 
 
 def _activate(dest: Path, pack_path: Path) -> tuple[ActivatedPack | None, tuple[str, ...]]:
