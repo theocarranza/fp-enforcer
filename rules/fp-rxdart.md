@@ -1,4 +1,3 @@
-
 # RxDart: The Reactive Flow
 
 ## Stream Composition
@@ -11,8 +10,8 @@
 
 ## Memory Safety
 
-3. When `.listen()` is unavoidable (UI edge), bind the subscription to a `CompositeSubscription` or a flutter_hook that guarantees disposal.
-4. Subject restrictions:
+1. When `.listen()` is unavoidable (UI edge), bind the subscription to a `CompositeSubscription` or a flutter_hook that guarantees disposal.
+2. Subject restrictions:
    - `BehaviorSubject`: approved for state holding (current-value access).
    - `PublishSubject`: approved for events (clicks, toasts).
    - `ReplaySubject`: restricted — explicit `maxSize` bounds only.
