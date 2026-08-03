@@ -274,5 +274,115 @@ class LoadPacksTests(unittest.TestCase):
             self.assertIn("broken", message)
 
 
+def _dart_extension_pack() -> PatternPack:
+    return PatternPack(
+        language="dart",
+        suffixes=(".dart",),
+        exclude_suffixes=(),
+        patterns=(
+            Pattern(
+                id="no-dynamic",
+                regex=r"\bdynamic\b",
+                message="no dynamic",
+                rule="fp-dart-style 1",
+            ),
+        ),
+    )
+
+
+class PacksForTests(unittest.TestCase):
+    def test_packs_for_returns_all_matching(self) -> None:
+        packs = (_dart_pack(), _dart_extension_pack())
+        self.assertEqual(len(validate.packs_for(packs, "lib/a.dart")), 2)
+
+    def test_packs_for_respects_each_pack_exclusions(self) -> None:
+        packs = (_dart_pack(), _dart_extension_pack())
+        self.assertEqual(len(validate.packs_for(packs, "lib/a.g.dart")), 1)
+
+    def test_packs_for_no_match_returns_empty(self) -> None:
+        packs = (_dart_pack(), _dart_extension_pack())
+        self.assertEqual(validate.packs_for(packs, "lib/a.md"), ())
+
+    def test_pack_for_still_returns_first_match(self) -> None:
+        packs = (_dart_pack(), _dart_extension_pack())
+        matched = validate.pack_for(packs, "lib/a.dart")
+        self.assertIsNotNone(matched)
+        self.assertEqual(matched.language, "dart")
+
+
+class MultiPackScanTests(unittest.TestCase):
+    def test_scan_file_reports_from_all_matching_packs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "sample.dart"
+            target.write_text("dynamic x = 1;\n", encoding="utf-8")
+            packs = (_dart_pack(), _dart_extension_pack())
+            violations = validate.scan_file(packs, target)
+            self.assertEqual(
+                {item.pattern_id for item in violations}, {"no-dynamic"}
+            )
+
+    def test_identical_violations_across_packs_deduped(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "sample.dart"
+            target.write_text("dynamic x = 1;\n", encoding="utf-8")
+            packs = (_dart_extension_pack(), _dart_extension_pack())
+            violations = validate.scan_file(packs, target)
+            self.assertEqual(len(violations), 1)
+
+    def test_scan_diff_reports_from_all_matching_packs(self) -> None:
+        packs = (_dart_pack(), _dart_extension_pack())
+        diff = "\n".join(
+            [
+                "--- a/lib/sample.dart",
+                "+++ b/lib/sample.dart",
+                "@@ -0,0 +1,1 @@",
+                "+dynamic count = 0; // fp-allow: nothing",
+            ]
+        )
+        violations = validate.scan_diff(packs, diff)
+        self.assertEqual(
+            {item.pattern_id for item in violations}, {"no-dynamic"}
+        )
+
+    def test_load_packs_includes_learned_subdir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            patterns_dir = Path(tmp)
+            learned_dir = patterns_dir / "learned"
+            learned_dir.mkdir()
+            payload = {
+                "language": "dart",
+                "suffixes": [".dart"],
+                "exclude_suffixes": [],
+                "patterns": [
+                    {"id": "p", "regex": "x", "message": "m", "rule": "r"}
+                ],
+            }
+            (patterns_dir / "dart.json").write_text(
+                json.dumps(payload), encoding="utf-8"
+            )
+            (learned_dir / "extra.json").write_text(
+                json.dumps(payload), encoding="utf-8"
+            )
+            packs = validate.load_packs(patterns_dir)
+            self.assertEqual(len(packs), 2)
+
+    def test_load_pack_reads_single_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "dart.json"
+            payload = {
+                "language": "dart",
+                "suffixes": [".dart"],
+                "exclude_suffixes": [],
+                "patterns": [
+                    {"id": "p", "regex": "x", "message": "m", "rule": "r"}
+                ],
+                "self_test": {"violations": [], "clean": []},
+            }
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            pack = validate.load_pack(path)
+            self.assertEqual(pack.language, "dart")
+            self.assertEqual(pack.patterns[0].id, "p")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -68,23 +68,36 @@ def _pack_from_dict(name: str, raw: dict[str, object]) -> PatternPack:
     return pack
 
 
+def load_pack(path: Path) -> PatternPack:
+    return _pack_from_dict(path.stem, json.loads(path.read_text(encoding="utf-8")))
+
+
 def load_packs(patterns_dir: Path) -> tuple[PatternPack, ...]:
-    json_paths = sorted(patterns_dir.glob("*.json"))
+    json_paths = sorted(patterns_dir.glob("*.json")) + sorted(
+        (patterns_dir / "learned").glob("*.json")
+    )
+    return tuple(load_pack(path) for path in json_paths)
+
+
+def packs_for(
+    packs: tuple[PatternPack, ...], path: str
+) -> tuple[PatternPack, ...]:
     return tuple(
-        _pack_from_dict(path.stem, json.loads(path.read_text(encoding="utf-8")))
-        for path in json_paths
+        pack
+        for pack in packs
+        if not any(path.endswith(suffix) for suffix in pack.exclude_suffixes)
+        and any(path.endswith(suffix) for suffix in pack.suffixes)
     )
 
 
 def pack_for(
     packs: tuple[PatternPack, ...], path: str
 ) -> PatternPack | None:
-    for pack in packs:
-        if any(path.endswith(suffix) for suffix in pack.exclude_suffixes):
-            continue
-        if any(path.endswith(suffix) for suffix in pack.suffixes):
-            return pack
-    return None
+    match packs_for(packs, path):
+        case (first, *_):
+            return first
+        case ():
+            return None
 
 
 _COMMENT_OR_STRING = re.compile(
@@ -172,19 +185,29 @@ def scan_text(pack: PatternPack, text: str, path: str) -> tuple[Violation, ...]:
     return violations
 
 
+def _dedupe(violations: tuple[Violation, ...]) -> tuple[Violation, ...]:
+    return tuple(dict.fromkeys(violations))
+
+
 def scan_file(
     packs: tuple[PatternPack, ...], path: Path
 ) -> tuple[Violation, ...]:
-    pack = pack_for(packs, str(path))
-    match pack:
-        case None:
+    matched = packs_for(packs, str(path))
+    match matched:
+        case ():
             return ()
-        case matched:
+        case _:
             try:
                 text = path.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 return ()
-            return scan_text(matched, text, str(path))
+            return _dedupe(
+                tuple(
+                    violation
+                    for pack in matched
+                    for violation in scan_text(pack, text, str(path))
+                )
+            )
 
 
 def _should_skip_dir(name: str) -> bool:
@@ -261,13 +284,12 @@ def _process_diff_line(
             start = _parse_hunk_start(line)
             return (target_path, start if start is not None else 0, violations)
         case str() if line.startswith("+") and not line.startswith("+++"):
-            pack = pack_for(packs, target_path)
-            match pack:
-                case None:
-                    return (target_path, new_line + 1, violations)
-                case matched:
-                    found = _scan_added_line(matched, target_path, new_line, line[1:])
-                    return (target_path, new_line + 1, violations + found)
+            found = tuple(
+                violation
+                for pack in packs_for(packs, target_path)
+                for violation in _scan_added_line(pack, target_path, new_line, line[1:])
+            )
+            return (target_path, new_line + 1, violations + found)
         case str() if line.startswith("-") and not line.startswith("---"):
             return (target_path, new_line, violations)
         case str() if line.startswith(" "):
@@ -283,7 +305,7 @@ def scan_diff(
     state = initial
     for line in diff_text.splitlines():
         state = _process_diff_line(state, line, packs)
-    return state[2]
+    return _dedupe(state[2])
 
 
 def format_report(violations: tuple[Violation, ...]) -> str:
