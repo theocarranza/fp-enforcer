@@ -45,6 +45,15 @@ class DetectLanguageFeaturesTests(unittest.TestCase):
             )
             self.assertEqual(assimilate.detect_language_features(root), ())
 
+    def test_dart3_detected_from_spaced_range_sdk_constraint(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "pubspec.yaml").write_text(
+                'name: app\nenvironment:\n  sdk: ">= 3.0.0 <4.0.0"\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(assimilate.detect_language_features(root), ("dart3",))
+
     def test_missing_pubspec_yields_no_features(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(assimilate.detect_language_features(Path(tmp)), ())
@@ -302,6 +311,30 @@ class RunTests(unittest.TestCase):
             self.assertEqual(report.activated, ())
             self.assertEqual(len(report.gate_failures), 1)
             self.assertIn("dart3", report.gate_failures[0])
+
+
+class PruneStaleLearnedTests(unittest.TestCase):
+    def test_run_removes_learned_packs_for_undetected_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "pubspec.yaml").write_text(
+                "name: app\nenvironment:\n  sdk: ^3.4.0\n", encoding="utf-8"
+            )
+            (root / "package.json").write_text(
+                json.dumps({"dependencies": {"rxjs": "^7.0.0"}}),
+                encoding="utf-8",
+            )
+            first = assimilate.run(root)
+            self.assertEqual(
+                sorted(item.pack_id for item in first.activated),
+                ["dart3", "rxjs"],
+            )
+            (root / "package.json").write_text("{}", encoding="utf-8")
+            second = assimilate.run(root)
+            self.assertEqual([item.pack_id for item in second.activated], ["dart3"])
+            learned = root / ".fp-enforcer" / "rules" / "patterns" / "learned"
+            self.assertTrue((learned / "dart3.json").is_file())
+            self.assertFalse((learned / "rxjs.json").exists())
 
 
 class CuratedPackTests(unittest.TestCase):

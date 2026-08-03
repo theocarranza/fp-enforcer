@@ -14,7 +14,7 @@ from fp_enforcer.core import PatternPack
 SOURCE_ROOT = Path(__file__).resolve().parent.parent
 
 _SDK_CONSTRAINT = re.compile(
-    r"^\s+sdk:\s*[\"']?(?:\^|>=)?(\d+)\.", re.MULTILINE
+    r"^\s+sdk:\s*[\"']?(?:\^|>=)?\s*(\d+)\.", re.MULTILINE
 )
 
 
@@ -127,17 +127,14 @@ def pack_self_test_failures(path: Path) -> tuple[str, ...]:
             return ()
 
 
+def _learned_dir(dest: Path) -> Path:
+    return dest / ".fp-enforcer" / "rules" / "patterns" / "learned"
+
+
 def _activate(dest: Path, pack_path: Path) -> tuple[ActivatedPack | None, tuple[str, ...]]:
     match pack_self_test_failures(pack_path):
         case ():
-            target = (
-                dest
-                / ".fp-enforcer"
-                / "rules"
-                / "patterns"
-                / "learned"
-                / pack_path.name
-            )
+            target = _learned_dir(dest) / pack_path.name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(pack_path, target)
             return (ActivatedPack(pack_id=pack_path.stem, path=target), ())
@@ -148,9 +145,27 @@ def _activate(dest: Path, pack_path: Path) -> tuple[ActivatedPack | None, tuple[
             )
 
 
+def prune_stale_learned(dest: Path, detected_ids: tuple[str, ...]) -> tuple[Path, ...]:
+    learned = _learned_dir(dest)
+    match learned.is_dir():
+        case False:
+            return ()
+        case True:
+            keep = frozenset(detected_ids)
+            removed = tuple(
+                path
+                for path in sorted(learned.glob("*.json"))
+                if path.stem not in keep
+            )
+            for path in removed:
+                path.unlink()
+            return removed
+
+
 def run(dest: Path, source_root: Path = SOURCE_ROOT) -> AssimilateReport:
     ids = learn.detect_libraries(dest) + detect_language_features(dest)
     results = tuple(_activate(dest, path) for path in select_packs(source_root, ids))
     activated = tuple(item for item, _ in results if item is not None)
     failures = tuple(failure for _, items in results for failure in items)
+    prune_stale_learned(dest, ids)
     return AssimilateReport(activated=activated, gate_failures=failures)
