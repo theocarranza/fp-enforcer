@@ -1,0 +1,20 @@
+{
+  "feature": "dart3",
+  "language": "dart",
+  "suffixes": [".dart"],
+  "exclude_suffixes": [".g.dart", ".freezed.dart", ".gr.dart", ".mocks.dart"],
+  "patterns": [
+    {"id": "prefer-switch-expression", "regex": "^\\s*switch\\s*\\(", "message": "prefer switch expressions over switch statements", "rule": "fp-dart-style design 4 / dart 3"}
+  ],
+  "self_test": {
+    "violations": [
+      "  switch (state) {",
+      "switch (value) {"
+    ],
+    "clean": [
+      "final label = switch (state) {",
+      "      _ => 'idle',",
+      "String describe(State s) => switch (s) {"
+    ]
+  }
+}
