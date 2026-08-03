@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 .fp-enforcer/
+build/
+dist/
+*.egg-info/

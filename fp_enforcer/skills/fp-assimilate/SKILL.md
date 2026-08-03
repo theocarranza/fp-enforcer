@@ -12,8 +12,8 @@ and pattern packs (enforced, via this skill).
 ## Run the pipeline
 
 ```bash
-python3 -m fp_enforcer learn --dest /path/to/project
-python3 -m fp_enforcer assimilate --dest /path/to/project
+fp-enforcer learn --dest /path/to/project
+fp-enforcer assimilate --dest /path/to/project
 ```
 
 `learn` writes agent-facing profiles to `.fp-enforcer/knowledge/`.
@@ -32,7 +32,7 @@ clean strings produce none. Gate failures are printed to stderr and exit 1.
 ## Verify activation
 
 ```bash
-python3 -m fp_enforcer validate --patterns-dir <project>/.fp-enforcer/rules/patterns <project>/lib
+fp-enforcer validate --patterns-dir <project>/.fp-enforcer/rules/patterns <project>/lib
 ```
 
 Confirm activated packs fire on real code without flooding false positives.
