@@ -11,7 +11,7 @@ from pathlib import Path
 from fp_enforcer import learn, validate
 from fp_enforcer.core import PatternPack
 
-SOURCE_ROOT = Path(__file__).resolve().parent.parent
+SOURCE_ROOT = Path(__file__).resolve().parent
 
 _SDK_CONSTRAINT = re.compile(
     r"^\s+sdk:\s*[\"']?(?:\^|>=)?\s*(\d+)\.", re.MULTILINE

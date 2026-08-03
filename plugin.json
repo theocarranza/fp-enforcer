@@ -1,0 +1,22 @@
+{
+  "name": "fp-enforcer",
+  "version": "0.3.0",
+  "description": "Functional programming enforcement skills for Codex: validate, repair, learn, assimilate, and wire fp-enforcer into a project.",
+  "author": {
+    "name": "monolith",
+    "url": "https://github.com/theocarranza"
+  },
+  "homepage": "https://github.com/theocarranza/fp-enforcer",
+  "repository": "https://github.com/theocarranza/fp-enforcer",
+  "license": "MIT",
+  "keywords": ["functional-programming", "linting", "code-quality"],
+  "skills": "./fp_enforcer/skills/",
+  "interface": {
+    "displayName": "FP Enforcer",
+    "shortDescription": "Functional programming rule enforcement",
+    "longDescription": "Real-time enforcement of the functional programming paradigm for agent-driven codebases. Delivers skills to validate, repair, learn, and assimilate FP patterns. Use the fp-wire skill to install the runtime from PyPI and wire per-project hooks.",
+    "developerName": "monolith",
+    "category": "Code Quality",
+    "capabilities": ["Write"]
+  }
+}

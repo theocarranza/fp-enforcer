@@ -6,7 +6,7 @@ import json
 import shutil
 from pathlib import Path
 
-SOURCE_ROOT = Path(__file__).resolve().parent.parent
+SOURCE_ROOT = Path(__file__).resolve().parent
 _HOOK_MARKER = ".fp-enforcer/run_hook.py"
 _MANIFEST_VERSION = "0.1.0"
 
@@ -217,18 +217,18 @@ def _vendor_runtime(
     dest: Path, source_root: Path, created: list[Path]
 ) -> None:
     target_root = dest / ".fp-enforcer"
-    package_src = source_root / "fp_enforcer"
-    rules_src = source_root / "rules"
     package_dest = target_root / "fp_enforcer"
     rules_dest = target_root / "rules"
 
-    def ignore_pycache(_directory: str, names: list[str]) -> list[str]:
-        return [name for name in names if name == "__pycache__"]
+    def ignore_non_runtime(_directory: str, names: list[str]) -> list[str]:
+        return [
+            name for name in names if name in ("__pycache__", "rules", "skills")
+        ]
 
     shutil.copytree(
-        package_src, package_dest, dirs_exist_ok=True, ignore=ignore_pycache
+        source_root, package_dest, dirs_exist_ok=True, ignore=ignore_non_runtime
     )
-    shutil.copytree(rules_src, rules_dest, dirs_exist_ok=True)
+    shutil.copytree(source_root / "rules", rules_dest, dirs_exist_ok=True)
     created.extend(
         path
         for root in (package_dest, rules_dest)

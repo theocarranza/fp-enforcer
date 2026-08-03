@@ -17,11 +17,12 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _build_fixture_source_root(base: Path) -> Path:
-    fixture = base / "fixture-source"
-    shutil.copytree(_PROJECT_ROOT / "fp_enforcer", fixture / "fp_enforcer")
-    shutil.copytree(_PROJECT_ROOT / "rules", fixture / "rules")
+    # source_root is the package directory itself; rules/ and skills/
+    # live inside it since the package-data relocation.
+    fixture = base / "fixture-source" / "fp_enforcer"
+    shutil.copytree(_PROJECT_ROOT / "fp_enforcer", fixture)
     skills = fixture / "skills" / "fp-enforcer"
-    skills.mkdir(parents=True)
+    skills.mkdir(parents=True, exist_ok=True)
     (skills / "SKILL.md").write_text("# fp-enforcer\n", encoding="utf-8")
     return fixture
 
@@ -178,8 +179,8 @@ class HookRuntimeEditTests(unittest.TestCase):
 
 
 class SourceRootTests(unittest.TestCase):
-    def test_source_root_points_at_project(self) -> None:
-        self.assertEqual(SOURCE_ROOT, _PROJECT_ROOT)
+    def test_source_root_points_at_package(self) -> None:
+        self.assertEqual(SOURCE_ROOT, _PROJECT_ROOT / "fp_enforcer")
 
 
 if __name__ == "__main__":

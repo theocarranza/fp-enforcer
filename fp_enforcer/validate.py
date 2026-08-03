@@ -14,7 +14,14 @@ _SKIP_DIR_NAMES: frozenset[str] = frozenset(
 
 
 def default_patterns_dir() -> Path:
-    return Path(__file__).resolve().parent.parent / "rules" / "patterns"
+    # Package-local when installed from a wheel or run from a checkout;
+    # sibling of the package in the vendored `.fp-enforcer/` layout.
+    package_local = Path(__file__).resolve().parent / "rules" / "patterns"
+    return (
+        package_local
+        if package_local.is_dir()
+        else package_local.parent.parent.parent / "rules" / "patterns"
+    )
 
 
 def _pattern_from_dict(raw: dict[str, object]) -> Pattern:

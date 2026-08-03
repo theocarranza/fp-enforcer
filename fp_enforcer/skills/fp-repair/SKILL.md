@@ -14,7 +14,7 @@ The fp-enforcer tool reports violations but never mutates code. The agent reads 
 Run validation before and after every repair pass:
 
 ```bash
-python3 -m fp_enforcer validate <paths...>
+fp-enforcer validate <paths...>
 ```
 
 For hook-triggered feedback, re-run on the files that were edited.
@@ -50,7 +50,7 @@ Match the idioms already used in the surrounding module.
 ### 5. Re-validate until clean
 
 ```bash
-python3 -m fp_enforcer validate <paths...>
+fp-enforcer validate <paths...>
 ```
 
 Repeat until exit code 0 with no output. Do not claim completion without a clean validation run on every file you changed.

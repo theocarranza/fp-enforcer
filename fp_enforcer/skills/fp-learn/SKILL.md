@@ -10,7 +10,7 @@ Detect functional-programming libraries in a project and generate agent-facing k
 ## Run the learn CLI
 
 ```bash
-python3 -m fp_enforcer learn --dest /path/to/project
+fp-enforcer learn --dest /path/to/project
 ```
 
 The tool inspects `pubspec.yaml` and `package.json` for known FP libraries:

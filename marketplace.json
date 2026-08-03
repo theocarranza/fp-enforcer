@@ -1,0 +1,19 @@
+{
+  "name": "fp-enforcer",
+  "interface": {
+    "displayName": "FP Enforcer"
+  },
+  "plugins": [
+    {
+      "name": "fp-enforcer",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Code Quality"
+    }
+  ]
+}

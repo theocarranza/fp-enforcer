@@ -12,22 +12,24 @@ Run the fp-enforcer CLI to scan for heuristic pattern violations against the can
 **Specific paths or directories**
 
 ```bash
-python3 -m fp_enforcer validate path/to/file.dart lib/
+fp-enforcer validate path/to/file.dart lib/
 ```
 
 **Git diff (added lines only)**
 
 ```bash
-git diff | python3 -m fp_enforcer validate --diff -
+git diff | fp-enforcer validate --diff -
 ```
 
 **Whole tree** — pass the project root or `.`:
 
 ```bash
-python3 -m fp_enforcer validate .
+fp-enforcer validate .
 ```
 
 When installed in a target project, rules and pattern packs live under `<project>/.fp-enforcer/rules/`. Run commands from the project root so relative paths resolve correctly.
+
+If the `fp-enforcer` executable is not on PATH, run the vendored copy instead: `PYTHONPATH=.fp-enforcer python3 -m fp_enforcer validate ...`.
 
 ## Reading the report
 

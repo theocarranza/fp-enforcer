@@ -95,18 +95,26 @@ def _build_parser() -> argparse.ArgumentParser:
     assimilate_parser.add_argument("--dest", required=True)
     assimilate_parser.set_defaults(handler=_cmd_assimilate)
 
-    install_parser = subparsers.add_parser("install")
-    install_parser.add_argument(
+    wire_parser = subparsers.add_parser(
+        "wire",
+        aliases=["install"],
+        help="wire a project to the installed fp-enforcer (rules, skills, hooks)",
+    )
+    wire_parser.add_argument(
         "--client",
         required=True,
         choices=("cursor", "claude", "codex", "antigravity", "all"),
     )
-    install_parser.add_argument("--dest", required=True)
-    install_parser.set_defaults(handler=_cmd_install)
+    wire_parser.add_argument("--dest", required=True)
+    wire_parser.set_defaults(handler=_cmd_install)
 
-    uninstall_parser = subparsers.add_parser("uninstall")
-    uninstall_parser.add_argument("--dest", required=True)
-    uninstall_parser.set_defaults(handler=_cmd_uninstall)
+    unwire_parser = subparsers.add_parser(
+        "unwire",
+        aliases=["uninstall"],
+        help="remove fp-enforcer wiring from a project",
+    )
+    unwire_parser.add_argument("--dest", required=True)
+    unwire_parser.set_defaults(handler=_cmd_uninstall)
 
     return parser
 

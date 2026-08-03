@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-03
+
+### Added
+
+- PyPI packaging: `pyproject.toml` with the `fp-enforcer` console script and
+  `rules/` + `skills/` shipped as package data. Install with
+  `pipx install fp-enforcer` (or `uv tool install fp-enforcer`); update with
+  `pipx upgrade fp-enforcer` + re-wire. No local checkout required.
+- GitHub Actions: CI on Python 3.10/3.12 and a tag-triggered release workflow
+  publishing to PyPI via trusted publishing.
+- Marketplace adapters: Claude Code marketplace catalog
+  (`.claude-plugin/marketplace.json`), Codex plugin manifests (`plugin.json`,
+  `marketplace.json`), and Cursor plugin manifest
+  (`.cursor-plugin/plugin.json`). Plugins deliver skills and rules; hooks are
+  wired per-project by `fp-enforcer wire` to avoid double execution.
+
+### Changed
+
+- CLI: `install` renamed to `wire` and `uninstall` to `unwire`; the old names
+  remain as aliases.
+- Skill: `fp-bootstrap` renamed to `fp-wire`; all skills now invoke the
+  `fp-enforcer` console script.
+- `rules/` and `skills/` moved inside the `fp_enforcer` package so wheels are
+  self-contained; the vendored `.fp-enforcer/` project layout is unchanged.
+
 ## [0.2.1] - 2026-08-03
 
 ### Fixed
