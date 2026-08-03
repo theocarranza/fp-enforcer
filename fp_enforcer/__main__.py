@@ -6,7 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from fp_enforcer import learn, validate
+from fp_enforcer import assimilate, learn, validate
 
 
 def _cmd_validate(args: argparse.Namespace) -> int:
@@ -39,6 +39,19 @@ def _cmd_learn(args: argparse.Namespace) -> int:
     for path in written:
         print(path)
     return 0
+
+
+def _cmd_assimilate(args: argparse.Namespace) -> int:
+    report = assimilate.run(Path(args.dest))
+    for item in report.activated:
+        print(f"activated: {item.pack_id} -> {item.path}")
+    for failure in report.gate_failures:
+        print(f"gate failure: {failure}", file=sys.stderr)
+    match report.gate_failures:
+        case ():
+            return 0
+        case _:
+            return 1
 
 
 def _cmd_install(args: argparse.Namespace) -> int:
@@ -77,6 +90,10 @@ def _build_parser() -> argparse.ArgumentParser:
     learn_parser = subparsers.add_parser("learn")
     learn_parser.add_argument("--dest", required=True)
     learn_parser.set_defaults(handler=_cmd_learn)
+
+    assimilate_parser = subparsers.add_parser("assimilate")
+    assimilate_parser.add_argument("--dest", required=True)
+    assimilate_parser.set_defaults(handler=_cmd_assimilate)
 
     install_parser = subparsers.add_parser("install")
     install_parser.add_argument(
