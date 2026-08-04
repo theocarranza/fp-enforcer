@@ -73,8 +73,20 @@ class PackagingTests(unittest.TestCase):
             self.assertEqual(len(wheels), 1)
             with zipfile.ZipFile(wheels[0]) as archive:
                 names = frozenset(archive.namelist())
-            self.assertIn("fp_enforcer/adapters/__init__.py", names)
-            self.assertIn("fp_enforcer/adapters/cursor.py", names)
+            for adapter in (
+                "fp_enforcer/adapters/__init__.py",
+                "fp_enforcer/adapters/antigravity.py",
+                "fp_enforcer/adapters/claude.py",
+                "fp_enforcer/adapters/codex.py",
+                "fp_enforcer/adapters/cursor.py",
+            ):
+                self.assertIn(adapter, names)
+            self.assertTrue(
+                any(name.startswith("fp_enforcer/rules/") for name in names)
+            )
+            self.assertTrue(
+                any(name.startswith("fp_enforcer/skills/") for name in names)
+            )
 
 
 if __name__ == "__main__":
