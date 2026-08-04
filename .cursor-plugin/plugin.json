@@ -1,7 +1,7 @@
 {
   "name": "fp-enforcer",
   "displayName": "FP Enforcer",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Functional programming enforcement: rules and skills to validate, repair, learn, assimilate, and wire fp-enforcer into a project. Hooks are wired per-project by the fp-wire skill.",
   "author": {
     "name": "monolith",

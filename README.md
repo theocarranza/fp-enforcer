@@ -1,9 +1,9 @@
 # fp-enforcer
 
-![Version](https://img.shields.io/badge/version-0.3.0-blue)
+![Version](https://img.shields.io/badge/version-0.3.1-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![Dependencies](https://img.shields.io/badge/dependencies-stdlib%20only-success)
-![Tests](https://img.shields.io/badge/tests-78%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-80%20passing-brightgreen)
 ![Paradigm](https://img.shields.io/badge/paradigm-functional-8A2BE2)
 ![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-E05735)
 

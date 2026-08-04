@@ -9,9 +9,13 @@
       "name": "fp-enforcer",
       "source": "./",
       "description": "Functional programming enforcement skills and rules. Use the fp-wire skill to install the runtime from PyPI and wire hooks into a project.",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "license": "MIT",
-      "keywords": ["functional-programming", "linting", "code-quality"],
+      "keywords": [
+        "functional-programming",
+        "linting",
+        "code-quality"
+      ],
       "category": "Code Quality"
     }
   ]
