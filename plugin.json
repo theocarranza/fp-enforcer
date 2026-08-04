@@ -1,6 +1,6 @@
 {
   "name": "fp-enforcer",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Functional programming enforcement skills for Codex: validate, repair, learn, assimilate, and wire fp-enforcer into a project.",
   "author": {
     "name": "monolith",
