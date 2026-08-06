@@ -1,6 +1,7 @@
 ---
 name: fp-wire
 description: Use when asked to install, wire, update, or remove fp-enforcer in a coding project for Cursor, Claude, Codex, or Antigravity.
+license: MIT
 ---
 
 # FP Wire

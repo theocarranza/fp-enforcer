@@ -1,0 +1,33 @@
+{
+  "name": "fp-enforcer",
+  "version": "0.3.1",
+  "description": "Functional programming enforcement: rules, violation scanning, and skills to validate, repair, learn, assimilate, and wire fp-enforcer into a project. (Claude Code edition).",
+  "author": {
+    "name": "monolith"
+  },
+  "homepage": "https://github.com/theocarranza/fp-enforcer",
+  "repository": "https://github.com/theocarranza/fp-enforcer",
+  "license": "MIT",
+  "keywords": [
+    "functional-programming",
+    "linting",
+    "code-quality",
+    "open-plugins",
+    "claude"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "FP Enforcer",
+    "shortDescription": "Functional programming rule enforcement",
+    "longDescription": "Functional programming enforcement: rules, violation scanning, and skills to validate, repair, learn, assimilate, and wire fp-enforcer into a project.",
+    "developerName": "monolith",
+    "category": "Code Quality",
+    "capabilities": [
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Wire fp-enforcer into this project.",
+      "Validate this codebase for functional-programming compliance."
+    ]
+  }
+}

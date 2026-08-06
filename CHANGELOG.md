@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-08-06
+
+### Changed
+
+- Adapted repository to the Open Plugins / agent-plugin-template shape (same pattern as agent-continuity):
+  `.plugin/plugin.json`, root `VERSION` lockstep, `adapters/{cursor,claude,codex}/` with
+  dedicated `install.sh` / `uninstall.sh`, and `scripts/validate.sh` + `scripts/build_all.sh`.
+- Flattened portable skills to root `skills/` (mirrored under `fp_enforcer/skills/` for wheels).
+- Extended adapter packaging to ship all five skills, the `fp_enforcer` Python package, hooks, assets, and Cursor rules.
+
+### Added
+
+- Curl one-liner install/uninstall UX per host; plain install upgrades in place.
+- `.agents/plugins/marketplace.json` for Codex-accepted marketplace paths.
+
+
 ## [0.3.0] - 2026-08-03
 
 ### Added

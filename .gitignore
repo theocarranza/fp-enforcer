@@ -1,6 +1,21 @@
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Python
 __pycache__/
-*.pyc
-.fp-enforcer/
-build/
-dist/
+*.py[cod]
 *.egg-info/
+build/
+.fp-enforcer/
+
+# Adapter build output (do not hand-edit)
+dist/
+
+# Codex marketplace index (override global **/.agents/ ignore)
+.agents/
+!.agents/
+!.agents/plugins/
+!.agents/plugins/marketplace.json

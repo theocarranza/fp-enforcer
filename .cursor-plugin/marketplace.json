@@ -1,0 +1,26 @@
+{
+  "name": "fp-enforcer-local",
+  "owner": {
+    "name": "monolith",
+    "url": "https://github.com/theocarranza"
+  },
+  "metadata": {
+    "description": "Local marketplace for FP Enforcer"
+  },
+  "plugins": [
+    {
+      "name": "fp-enforcer",
+      "source": "./",
+      "description": "Functional programming enforcement: rules, violation scanning, and skills to validate, repair, learn, assimilate, and wire fp-enforcer into a project.",
+      "version": "0.3.1",
+      "license": "MIT",
+      "keywords": [
+        "functional-programming",
+        "linting",
+        "code-quality",
+        "open-plugins"
+      ],
+      "category": "Code Quality"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 ---
 name: fp-validate
 description: Use when asked to lint, validate, or check code blocks, diffs, pull requests, or an entire codebase for functional-programming compliance.
+license: MIT
 ---
 
 # FP Validate

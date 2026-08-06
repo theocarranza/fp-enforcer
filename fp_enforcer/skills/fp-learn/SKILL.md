@@ -1,6 +1,7 @@
 ---
 name: fp-learn
 description: Use when asked to assimilate or learn the FP libraries present in a project so enforcement and repair understand their operators and types.
+license: MIT
 ---
 
 # FP Learn

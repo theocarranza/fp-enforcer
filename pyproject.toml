@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fp-enforcer"
-version = "0.3.0"
+version = "0.3.1"
 description = "Functional programming rule enforcement for AI coding harnesses: validation hooks, curated pattern packs, and agent skills for Cursor, Claude, Codex, and Antigravity."
 readme = "README.md"
 requires-python = ">=3.10"

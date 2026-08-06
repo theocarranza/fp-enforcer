@@ -1,6 +1,7 @@
 ---
 name: fp-assimilate
 description: Use when asked to assimilate FP libraries or language features of a project into enforcement — activates curated pattern packs so validation and hooks understand library-specific anti-patterns.
+license: MIT
 ---
 
 # FP Assimilate

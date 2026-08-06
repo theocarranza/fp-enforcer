@@ -1,6 +1,7 @@
 ---
 name: fp-repair
 description: Use when a validation report or hook feedback lists functional-programming violations that need to be fixed in source code.
+license: MIT
 ---
 
 # FP Repair

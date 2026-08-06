@@ -1,17 +1,25 @@
 {
-  "name": "fp-enforcer",
+  "name": "fp-enforcer-local",
   "owner": {
     "name": "monolith",
     "url": "https://github.com/theocarranza"
+  },
+  "metadata": {
+    "description": "Local marketplace for FP Enforcer"
   },
   "plugins": [
     {
       "name": "fp-enforcer",
       "source": "./",
-      "description": "Functional programming enforcement skills and rules. Use the fp-wire skill to install the runtime from PyPI and wire hooks into a project.",
-      "version": "0.3.0",
+      "description": "Functional programming enforcement: rules, violation scanning, and skills to validate, repair, learn, assimilate, and wire fp-enforcer into a project.",
+      "version": "0.3.1",
       "license": "MIT",
-      "keywords": ["functional-programming", "linting", "code-quality"],
+      "keywords": [
+        "functional-programming",
+        "linting",
+        "code-quality",
+        "open-plugins"
+      ],
       "category": "Code Quality"
     }
   ]

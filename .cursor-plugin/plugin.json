@@ -1,8 +1,8 @@
 {
   "name": "fp-enforcer",
   "displayName": "FP Enforcer",
-  "version": "0.3.0",
-  "description": "Functional programming enforcement: rules and skills to validate, repair, learn, assimilate, and wire fp-enforcer into a project. Hooks are wired per-project by the fp-wire skill.",
+  "version": "0.3.1",
+  "description": "Functional programming enforcement: rules, violation scanning, and skills to validate, repair, learn, assimilate, and wire fp-enforcer into a project.",
   "author": {
     "name": "monolith",
     "url": "https://github.com/theocarranza"
@@ -10,14 +10,19 @@
   "homepage": "https://github.com/theocarranza/fp-enforcer",
   "repository": "https://github.com/theocarranza/fp-enforcer",
   "license": "MIT",
-  "keywords": ["functional-programming", "linting", "code-quality"],
+  "keywords": [
+    "functional-programming",
+    "linting",
+    "code-quality",
+    "open-plugins"
+  ],
   "logo": "./assets/logo.png",
   "skills": [
-    "./fp_enforcer/skills/fp-validate",
-    "./fp_enforcer/skills/fp-repair",
-    "./fp_enforcer/skills/fp-learn",
-    "./fp_enforcer/skills/fp-assimilate",
-    "./fp_enforcer/skills/fp-wire"
+    "./skills/fp-validate",
+    "./skills/fp-repair",
+    "./skills/fp-learn",
+    "./skills/fp-assimilate",
+    "./skills/fp-wire"
   ],
   "rules": [
     "./.cursor/rules/fp-core.mdc",
