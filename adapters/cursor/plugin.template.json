@@ -1,6 +1,6 @@
 {
   "name": "fp-enforcer",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Functional programming enforcement: rules, violation scanning, and skills to validate, repair, learn, assimilate, and wire fp-enforcer into a project. (Cursor edition).",
   "author": {
     "name": "monolith"
