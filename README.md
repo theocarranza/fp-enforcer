@@ -109,7 +109,7 @@ fp_enforcer/                 Python package (CLI, rules, adapters, mirrored skil
 adapters/{cursor,claude,codex}/
 scripts/validate.sh
 scripts/build_all.sh
-hooks/hooks.json             Sample / project-relative hook shape (wire installs per project)
+hooks/hooks.json             Valid no-op plugin hook descriptor
 ```
 
 ## License

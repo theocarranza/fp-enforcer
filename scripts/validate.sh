@@ -64,6 +64,14 @@ match f'version = "{VERSION}"' in pyproject:
     case False:
         fail(f"pyproject.toml version is not lockstep with VERSION {VERSION!r}")
 
+plugin_hooks = json.loads((ROOT / "hooks" / "hooks.json").read_text(encoding="utf-8"))
+extra_hook_keys = sorted(set(plugin_hooks) - {"description", "hooks"})
+match extra_hook_keys:
+    case []:
+        pass
+    case keys:
+        fail(f"hooks/hooks.json has unsupported top-level keys: {', '.join(keys)}")
+
 for relative in (
     Path(".claude-plugin") / "marketplace.json",
     Path(".cursor-plugin") / "marketplace.json",
