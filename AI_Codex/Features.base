@@ -1,0 +1,33 @@
+filters:
+  and:
+    - file.inFolder("Features")
+    - file.ext == "md"
+formulas:
+  age_days: (now() - file.ctime).days
+  has_meta: if(type, "✅", "⚠️ no frontmatter")
+properties:
+  formula.age_days:
+    displayName: Age (d)
+  formula.has_meta:
+    displayName: Meta
+views:
+  - type: table
+    name: By area
+    groupBy:
+      property: area
+      direction: ASC
+    order:
+      - file.name
+      - type
+      - area
+      - stack
+      - tags
+      - formula.age_days
+  - type: table
+    name: Needs metadata
+    filters:
+      not:
+        - type
+    order:
+      - file.name
+      - file.mtime
