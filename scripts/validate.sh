@@ -72,6 +72,16 @@ match extra_hook_keys:
     case keys:
         fail(f"hooks/hooks.json has unsupported top-level keys: {', '.join(keys)}")
 
+match plugin_hooks.get("hooks"):
+    case hooks if isinstance(hooks, dict) and hooks == {}:
+        pass
+    case hooks if isinstance(hooks, dict):
+        fail(
+            "hooks/hooks.json hooks must be empty at plugin level; use fp-enforcer wire"
+        )
+    case other:
+        fail(f"hooks/hooks.json hooks must be an empty object, got {other!r}")
+
 for relative in (
     Path(".claude-plugin") / "marketplace.json",
     Path(".cursor-plugin") / "marketplace.json",
