@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 import unittest
@@ -50,7 +51,11 @@ class BuildPluginTests(unittest.TestCase):
                 self.assertTrue((plugin / "skills" / name / "SKILL.md").is_file())
             self.assertTrue((plugin / "fp_enforcer" / "__main__.py").is_file())
             self.assertTrue((plugin / "fp_enforcer" / "rules" / "manifest.json").is_file())
-            self.assertTrue((plugin / "hooks" / "hooks.json").is_file())
+            hooks_path = plugin / "hooks" / "hooks.json"
+            self.assertTrue(hooks_path.is_file())
+            hooks = json.loads(hooks_path.read_text(encoding="utf-8"))
+            self.assertEqual(set(hooks), {"description", "hooks"})
+            self.assertEqual(hooks["hooks"], {})
             self.assertTrue((plugin / "assets" / "logo.png").is_file())
             self.assertFalse((plugin / "scripts" / "validate.sh").exists())
             self.assertFalse((plugin / "skills" / "hello").exists())

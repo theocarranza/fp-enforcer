@@ -1,0 +1,31 @@
+filters:
+  and:
+    - file.inFolder("Agent_Sessions")
+    - file.ext == "md"
+    - file.name != "README"
+formulas:
+  age_days: (now() - file.ctime).days
+  has_meta: if(date, "✅", "⚠️ no frontmatter")
+properties:
+  date:
+    displayName: Date
+  formula.age_days:
+    displayName: Age (d)
+  formula.has_meta:
+    displayName: Meta
+views:
+  - type: table
+    name: Sessions
+    order:
+      - file.name
+      - date
+      - formula.age_days
+      - formula.has_meta
+  - type: table
+    name: Needs metadata
+    filters:
+      not:
+        - date
+    order:
+      - file.name
+      - file.mtime

@@ -1,19 +1,4 @@
 {
-  "version": 1,
-  "hooks": {
-    "postToolUse": [
-      {
-        "command": "python3 .fp-enforcer/run_hook.py --client cursor --event edit",
-        "matcher": "Write|StrReplace",
-        "timeout": 15
-      }
-    ],
-    "stop": [
-      {
-        "command": "python3 .fp-enforcer/run_hook.py --client cursor --event stop",
-        "timeout": 240,
-        "loop_limit": 3
-      }
-    ]
-  }
+  "description": "Plugin-level hooks are intentionally empty. Use `fp-enforcer wire` to install host-specific per-project hooks.",
+  "hooks": {}
 }
