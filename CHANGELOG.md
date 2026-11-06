@@ -47,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `no-for-loop` message now points to the recursion rule for effectful repetition.
+- README documents what gets enforced per host (rules, references, hooks, packs) and fixes the
+  `wire` example (`--client`, not `--clients`); `fp-repair` and `fp-assimilate` skills cover the
+  new checks, references, and the `fp-ts` pack.
 - `fp-ts` learn profile now maps the agnostic principles onto fp-ts APIs and documents the
   deprecated → current renames (`getStructMonoid` → `struct`, `fold` → `concatAll`,
   `getFirstMonoid`/`getLastMonoid` → `getMonoid(first()/last())`, `getApplyMonoid` →
