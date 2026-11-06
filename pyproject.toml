@@ -28,7 +28,7 @@ fp-enforcer = "fp_enforcer.__main__:main"
 
 [project.urls]
 Repository = "https://github.com/theocarranza/fp-enforcer"
-Changelog = "https://github.com/theocarranza/fp-enforcer/blob/master/CHANGELOG.md"
+Changelog = "https://github.com/theocarranza/fp-enforcer/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 include = ["fp_enforcer*"]

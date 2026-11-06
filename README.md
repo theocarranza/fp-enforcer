@@ -8,15 +8,16 @@ Vendor-neutral **Open Plugins** root + **Agent Skills**. Host adapters build ins
 
 One curl one-liner per host. Plain install **upgrades in place** (replaces any prior managed install). Uninstall is a **separate** script — there is no `--uninstall` on install.
 
-Replace `REF` with `master` (or a tag) as needed.
+By default the installer bootstraps the **latest release** (newest `v*` tag). Pin a version with
+`--ref v0.3.3`, or track unreleased work with `--ref main`.
 
 ### Claude Code
 
 Install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/master/adapters/claude/install.sh \
-  | bash -s -- --repo theocarranza/fp-enforcer --ref master
+curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/main/adapters/claude/install.sh \
+  | bash -s -- --repo theocarranza/fp-enforcer
 ```
 
 Then:
@@ -28,8 +29,8 @@ Then:
 Uninstall:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/master/adapters/claude/uninstall.sh \
-  | bash -s -- --repo theocarranza/fp-enforcer --ref master
+curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/main/adapters/claude/uninstall.sh \
+  | bash -s -- --repo theocarranza/fp-enforcer
 ```
 
 ### Cursor
@@ -37,15 +38,15 @@ curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/master/ada
 Install (curl → `~/.cursor/plugins/local`):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/master/adapters/cursor/install.sh \
-  | bash -s -- --repo theocarranza/fp-enforcer --ref master
+curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/main/adapters/cursor/install.sh \
+  | bash -s -- --repo theocarranza/fp-enforcer
 ```
 
 Uninstall:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/master/adapters/cursor/uninstall.sh \
-  | bash -s -- --repo theocarranza/fp-enforcer --ref master
+curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/main/adapters/cursor/uninstall.sh \
+  | bash -s -- --repo theocarranza/fp-enforcer
 ```
 
 ### Codex
@@ -53,8 +54,8 @@ curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/master/ada
 Install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/master/adapters/codex/install.sh \
-  | bash -s -- --repo theocarranza/fp-enforcer --ref master
+curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/main/adapters/codex/install.sh \
+  | bash -s -- --repo theocarranza/fp-enforcer
 ```
 
 Codex marketplace manifests use `.agents/plugins/marketplace.json` (and mirrored accepted paths).
@@ -62,8 +63,8 @@ Codex marketplace manifests use `.agents/plugins/marketplace.json` (and mirrored
 Uninstall:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/master/adapters/codex/uninstall.sh \
-  | bash -s -- --repo theocarranza/fp-enforcer --ref master
+curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/main/adapters/codex/uninstall.sh \
+  | bash -s -- --repo theocarranza/fp-enforcer
 ```
 
 From a clone: `./adapters/<host>/install.sh` or `./adapters/<host>/uninstall.sh`. Dry-run: add `--dry-run`.
