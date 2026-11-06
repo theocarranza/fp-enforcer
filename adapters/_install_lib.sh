@@ -5,7 +5,7 @@ set -euo pipefail
 
 INSTALL_HOST="${INSTALL_HOST:-}"
 PLUGIN_INSTALL_REPO="${PLUGIN_INSTALL_REPO:-}"
-PLUGIN_INSTALL_REF="${PLUGIN_INSTALL_REF:-master}"
+PLUGIN_INSTALL_REF="${PLUGIN_INSTALL_REF:-latest}"
 INSTALL_DRY_RUN=0
 INSTALL_PREFIX=""
 INSTALL_ROOT_OVERRIDE=""
@@ -26,7 +26,7 @@ Usage:
 
 Options:
   --repo OWNER/REPO   GitHub repo for curl|bash bootstrap (or full git URL)
-  --ref REF           Git ref (default: master, or \$PLUGIN_INSTALL_REF)
+  --ref REF           Git ref: latest (newest v* release tag, default), a tag, or a branch; or \$PLUGIN_INSTALL_REF
   --prefix DIR        Override install root (skips host CLI registration)
   --root DIR          Use an existing checkout instead of cloning
   --dry-run           Print the plan without changing files
@@ -41,7 +41,7 @@ Examples:
   ./adapters/${host}/install.sh
   ./adapters/${host}/install.sh --dry-run
   curl -fsSL https://raw.githubusercontent.com/OWNER/REPO/main/adapters/${host}/install.sh \\
-    | bash -s -- --repo OWNER/REPO --ref main
+    | bash -s -- --repo OWNER/REPO
 EOF
 }
 
@@ -124,7 +124,7 @@ bootstrap_remote_root() {
   local url tmp
   if [[ -z "$PLUGIN_INSTALL_REPO" ]]; then
     echo "error: curl|bash install requires --repo OWNER/REPO (or PLUGIN_INSTALL_REPO)" >&2
-    echo "example: bash -s -- --repo OWNER/REPO --ref main" >&2
+    echo "example: bash -s -- --repo OWNER/REPO" >&2
     return 2
   fi
   if ! command -v git >/dev/null 2>&1; then
@@ -139,6 +139,10 @@ bootstrap_remote_root() {
   tmp="$(mktemp -d "${TMPDIR:-/tmp}/agent-plugin-install.XXXXXX")"
   # Caller owns cleanup via INSTALL_TMP_ROOT
   INSTALL_TMP_ROOT="$tmp"
+  if [[ "${PLUGIN_INSTALL_REF}" == "latest" ]]; then
+    PLUGIN_INSTALL_REF="$(git ls-remote --tags --refs --sort=-v:refname "$url" 'v*' | head -n 1 | sed 's#.*refs/tags/##')"
+    PLUGIN_INSTALL_REF="${PLUGIN_INSTALL_REF:-main}"
+  fi
   echo "[*] Bootstrapping from ${url}@${PLUGIN_INSTALL_REF} …"
   git clone --depth 1 --branch "$PLUGIN_INSTALL_REF" "$url" "$tmp/repo"
   printf '%s\n' "$tmp/repo"

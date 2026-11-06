@@ -8,7 +8,7 @@ One command for this repo:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/theocarranza/fp-enforcer/main/adapters/codex/install.sh \
-  | bash -s -- --repo theocarranza/fp-enforcer --ref main
+  | bash -s -- --repo theocarranza/fp-enforcer
 ```
 
 Forks: replace `theocarranza/fp-enforcer` with `OWNER/REPO`.

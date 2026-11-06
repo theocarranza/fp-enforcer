@@ -23,7 +23,7 @@ resolve_local_root() {
 bootstrap_and_reexec() {
   local -a original=("$@")
   local repo="${PLUGIN_INSTALL_REPO:-}"
-  local ref="${PLUGIN_INSTALL_REF:-master}"
+  local ref="${PLUGIN_INSTALL_REF:-latest}"
   local url tmp status i
   i=0
   while [[ $i -lt ${#original[@]} ]]; do
@@ -43,7 +43,7 @@ bootstrap_and_reexec() {
   done
   if [[ -z "$repo" ]]; then
     echo "error: curl|bash uninstall requires --repo OWNER/REPO (or PLUGIN_INSTALL_REPO)" >&2
-    echo "example: bash -s -- --repo OWNER/REPO --ref main" >&2
+    echo "example: bash -s -- --repo OWNER/REPO" >&2
     exit 2
   fi
   command -v git >/dev/null 2>&1 || { echo "error: git is required" >&2; exit 127; }
@@ -55,6 +55,10 @@ bootstrap_and_reexec() {
     *) echo "error: --repo must be OWNER/REPO, a git URL, or a local path" >&2; exit 2 ;;
   esac
   tmp="$(mktemp -d "${TMPDIR:-/tmp}/agent-plugin-uninstall.XXXXXX")"
+  if [[ "${ref}" == "latest" ]]; then
+    ref="$(git ls-remote --tags --refs --sort=-v:refname "$url" 'v*' | head -n 1 | sed 's#.*refs/tags/##')"
+    ref="${ref:-main}"
+  fi
   echo "[*] Bootstrapping from ${url}@${ref} …"
   git clone --depth 1 --branch "$ref" "$url" "$tmp/repo"
   set +e

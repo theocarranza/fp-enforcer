@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- curl|bash installers and uninstallers default to the **latest release** (newest `v*` tag,
+  resolved with `git ls-remote`), falling back to `main` when no tag exists. `--ref` still
+  accepts a tag or branch; `--ref latest` is explicit.
+
+### Fixed
+
+- Install docs and installer defaults referenced the removed `master` branch, so the README
+  one-liners failed with `Remote branch master not found`. All references now use `main`.
+- CI ran on pushes to `master` only; it now runs on pushes to `main`.
+- `pyproject.toml` Changelog URL points at `main`.
+
 ## [0.3.3] - 2026-11-06
 
 ### Added
