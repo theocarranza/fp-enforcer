@@ -178,6 +178,77 @@ class HookRuntimeEditTests(unittest.TestCase):
             self.assertIn("var", output["additional_context"])
 
 
+class RuleContextTests(unittest.TestCase):
+    """Rules must reach the agent's context, not only the vendored tree."""
+
+    def test_claude_rules_are_path_scoped_like_cursor(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            dest = Path(temp)
+            install(dest, ("claude",))
+            rules = dest / ".claude" / "rules"
+            core = (rules / "fp-core.md").read_text(encoding="utf-8")
+            typescript = (rules / "fp-typescript.md").read_text(encoding="utf-8")
+            self.assertFalse(core.startswith("---"), "core rule must load always")
+            self.assertIn("## Algebra", core)
+            self.assertTrue(typescript.startswith('---\npaths:\n  - "**/*.ts"\n---'))
+            self.assertIn("## Effects as Capabilities", typescript)
+
+            uninstall(dest)
+            self.assertFalse(rules.exists())
+
+    def test_codex_agents_block_is_managed_and_reversible(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            dest = Path(temp)
+            agents = dest / "AGENTS.md"
+            agents.write_text("# My project\n\nKeep this.\n", encoding="utf-8")
+
+            install(dest, ("codex",))
+            install(dest, ("codex",))
+            text = agents.read_text(encoding="utf-8")
+            self.assertEqual(text.count("<!-- fp-enforcer:begin"), 1)
+            self.assertIn("Keep this.", text)
+            self.assertIn("## Algebra", text)
+            self.assertIn("Applies to: `**/*.ts`", text)
+
+            uninstall(dest)
+            self.assertEqual(agents.read_text(encoding="utf-8"), "# My project\n\nKeep this.\n")
+
+    def test_codex_agents_file_created_by_install_is_removed(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            dest = Path(temp)
+            install(dest, ("codex",))
+            self.assertTrue((dest / "AGENTS.md").is_file())
+            uninstall(dest)
+            self.assertFalse((dest / "AGENTS.md").exists())
+
+
+class HookRuntimeStopTests(unittest.TestCase):
+    def test_stop_runs_dart_analyze_on_changed_dart_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            dart_file = Path(temp) / "a.dart"
+            dart_file.write_text("void main() {}\n", encoding="utf-8")
+            failing = mock.Mock(returncode=1, stdout="info - bad\n", stderr="")
+            buffer = io.StringIO()
+            with mock.patch(
+                "fp_enforcer.hook_runtime._repo_root", return_value=Path(temp)
+            ), mock.patch(
+                "fp_enforcer.hook_runtime._changed_paths", return_value=(dart_file,)
+            ), mock.patch(
+                "fp_enforcer.hook_runtime.shutil.which", return_value="/bin/dart"
+            ), mock.patch(
+                "fp_enforcer.hook_runtime.subprocess.run", return_value=failing
+            ) as run, mock.patch("sys.stdin", io.StringIO("{}")), mock.patch(
+                "sys.stdout", buffer
+            ):
+                exit_code = main(["--client", "claude", "--event", "stop"])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("timeout", run.call_args.kwargs)
+            output = json.loads(buffer.getvalue())
+            self.assertEqual(output["decision"], "block")
+            self.assertIn("dart analyze", output["reason"])
+
+
 class SourceRootTests(unittest.TestCase):
     def test_source_root_points_at_package(self) -> None:
         self.assertEqual(SOURCE_ROOT, _PROJECT_ROOT / "fp_enforcer")

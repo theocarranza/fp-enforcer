@@ -76,8 +76,41 @@ Per-project wiring still uses the CLI:
 pipx install fp-enforcer
 # or: uv tool install fp-enforcer
 
-fp-enforcer wire --dest /path/to/project --clients cursor,claude,codex,antigravity
+fp-enforcer wire --client all --dest /path/to/project
+# or one host: --client {cursor|claude|codex|antigravity}
+fp-enforcer assimilate --dest /path/to/project   # activate curated library packs
 ```
+
+## What gets enforced
+
+**Rules** (`fp_enforcer/rules/*.md`, listed in `manifest.json`) are loaded into each agent's context:
+
+| Host | Where the rules land |
+| --- | --- |
+| Cursor | `.cursor/rules/*.mdc` — core always, language rules by glob |
+| Claude Code | `.claude/rules/*.md` — core always, language rules scoped with `paths:` |
+| Codex | managed `<!-- fp-enforcer:begin/end -->` block in `AGENTS.md` (your content is preserved; `unwire` strips only the block) |
+| Antigravity | `.agent/rules/*.md` |
+
+`fp-core` is the language-agnostic mandate: purity and effects, errors as values, branching,
+immutable data, and **Algebra** — every aggregation is a lawful monoid (associativity, identity,
+derived record monoids, explicit first/last/applicative semantics for absence). `fp-typescript`
+gives the TypeScript shape in plain TypeScript, no library required: seams, monoids, effects as
+injected capabilities (one program, a production `Task` interpreter and a pure `State` test
+interpreter), recursion instead of loops, and parse-don't-validate.
+
+**References** ship with the rules and are vendored to `<project>/.fp-enforcer/rules/`:
+
+- `examples/typescript/` — runnable, strictly typed, library-free (`monoids.ts`,
+  `effects-as-capabilities.ts`, `lookup-tables.ts`; run with `node <file>`, Node ≥ 22.6).
+- `libraries/<library>/` — the same programs written against a specific library (currently `fp-ts`).
+
+**Hooks** scan every edit and gate completion (Stop) with the pattern packs in
+`rules/patterns/`. TypeScript checks include `no-let`, `no-else`, `no-or-fallback`,
+`no-for-loop`, `no-non-null-assertion`, `no-ambient-effect` (`Math.random`, `Date.now`,
+`console.*`, `process.*` outside edge interpreters) and `no-seedless-reduce`. `assimilate`
+adds curated library packs (`dart3`, `rxjs`, `fp-ts`). Justified edge cases are waived per
+line with `// fp-allow: <pattern-id> — <reason>`.
 
 Skills:
 
@@ -106,6 +139,7 @@ Canonical skills live under `skills/<name>/SKILL.md` (portable frontmatter only:
 .plugin/plugin.json          Open Plugins manifest
 skills/                      Portable Agent Skills
 fp_enforcer/                 Python package (CLI, rules, adapters, mirrored skills)
+fp_enforcer/rules/           Canonical rules, manifest.json, patterns/, examples/, libraries/
 adapters/{cursor,claude,codex}/
 scripts/validate.sh
 scripts/build_all.sh

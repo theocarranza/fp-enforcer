@@ -21,6 +21,8 @@ from fp_enforcer.validate import (
 )
 
 _DART_ANALYZE_LINE_LIMIT = 30
+# Below the 240s Stop-hook timeout wired into host settings.
+_DART_ANALYZE_TIMEOUT = 180
 
 
 def _read_payload() -> dict | None:

@@ -26,6 +26,9 @@ canonical `rules/patterns/libraries/` into:
 <project>/.fp-enforcer/rules/patterns/learned/
 ```
 
+Curated packs today: `dart3` (Dart 3 language features), `rxjs`, and `fp-ts`
+(deprecated monoid APIs → current names).
+
 Activation is fail-closed: every curated pack carries a `self_test` payload
 and is only installed when its violation strings produce violations and its
 clean strings produce none. Gate failures are printed to stderr and exit 1.

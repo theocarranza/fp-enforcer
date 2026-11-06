@@ -38,8 +38,8 @@ Removes client-specific wiring and the `.fp-enforcer/` directory according to th
 | Client | Artifacts |
 |--------|-----------|
 | **cursor** | `.cursor/rules/*.mdc` (from canonical rules) + `.cursor/hooks.json` entries |
-| **claude** | `.claude/skills/` copies + `.claude/settings.json` hook entries |
-| **codex** | `.codex/hooks.json` entries |
+| **claude** | `.claude/rules/*.md` (always-on core; language rules scoped via `paths:`) + `.claude/skills/` copies + `.claude/settings.json` hook entries |
+| **codex** | managed `<!-- fp-enforcer:begin/end -->` rules block in `AGENTS.md` (other content preserved) + `.codex/hooks.json` entries |
 | **antigravity** | `.agent/rules/*.md` copies |
 
 Rules source of truth after wiring: `<project>/.fp-enforcer/rules/`.

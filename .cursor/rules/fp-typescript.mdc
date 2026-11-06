@@ -6,19 +6,67 @@ alwaysApply: false
 
 # TypeScript: Functional Seams
 
-The core paradigm rule applies in full. TypeScript specifics:
+The core paradigm rule applies in full. Everything below is plain, current TypeScript — no library is required. Runnable, type-checked references live in `examples/typescript/` next to this file (vendored to `.fp-enforcer/rules/examples/typescript/`). Library-specific renderings live in `libraries/<library>/`; when a project already uses such a library, use its instances instead of re-declaring them, but the principles are the same.
+
+## Seams
 
 1. `readonly` on every interface field; `const` only — no `let`, no mutation.
-2. Replace branching lookups with data: a `Map` (or frozen record) plus nullish coalescing for the fallback, keeping a single source of truth.
+2. Replace branching lookups with data: a `ReadonlyMap` (or frozen record) plus nullish coalescing to a named fallback entry of the same table — one source of truth, no `!`. See `examples/typescript/lookup-tables.ts`.
 
 ```typescript
-export const fetchStatusCode = (key: string): StatusEntry =>
-  STATUS_MAP.get(key) ?? STATUS_MAP.get("internal")!;
+const INTERNAL: StatusEntry = { httpCode: 500, message: "Internal server error." };
+const STATUS: ReadonlyMap<string, StatusEntry> = new Map([
+  ["not-found", { httpCode: 404, message: "Resource not found." }],
+  ["internal", INTERNAL],
+]);
+export const fetchStatusCode = (key: string): StatusEntry => STATUS.get(key) ?? INTERNAL;
 ```
 
 3. Prefer `??` over `||` for absence — `||` swallows valid falsy values.
 4. Brand primitive types that carry domain meaning; refine with type guards and named predicates instead of inline boolean soup.
 5. Errors as values internally; `null` is acceptable at internal seams, typed errors (`HttpsError` etc.) only at the outermost edge.
 6. Partial updates travel as patch objects, not mutations.
-7. Fold aggregations with monoids: a `concat` plus an identity `empty` replaces accumulator loops (`{ concat: (x, y) => x + y, empty: 0 }`).
+7. Fold aggregations with monoids — see **Monoids** below; never an accumulator loop.
 8. Arrow-function expression bodies; pipelines of `map`/`filter`/`reduce` over loops; small named helpers over comments.
+
+## Monoids
+
+The core **Algebra** rules apply in full; this is their TypeScript shape. Reference: `examples/typescript/monoids.ts`.
+
+1. Declare the abstraction once, structurally:
+
+```typescript
+interface Semigroup<A> { readonly concat: (x: A, y: A) => A }
+interface Monoid<A> extends Semigroup<A> { readonly empty: A }
+```
+
+2. Instances are plain `const` records: sum `{ concat: (x, y) => x + y, empty: 0 }`, product (`empty: 1`), string (`""`), all (`&&`, `true`), any (`||`, `false`). Use `bigint` (`empty: 0n`) when sums must be exact; `number` is lawful only over exact integers.
+3. Fold with `concatAll = <A>(M: Monoid<A>) => (as: ReadonlyArray<A>): A => as.reduce(M.concat, M.empty)` — no seed, safe on `[]`.
+4. Derive record monoids with a mapped type, `struct<A>(fields: { readonly [K in keyof A]: Monoid<A[K]> }): Monoid<A>`, and nest them (`Point` → `Vector`). Duals come from `reverse(M)` (flip arguments).
+5. Model absence as a discriminated union `Option<A>` and pick its monoid explicitly: `first<A>()`, `last<A>()` (= `reverse(first())`), or `applicative(M)` with `empty: some(M.empty)`. Settings layers are `struct({ field: last<T>(), ... })` folded workspace → user.
+6. Every new instance ships with a law test (associativity + both identities) over representative samples, run against the real runtime representation.
+
+## Effects as Capabilities
+
+Reference: `examples/typescript/effects-as-capabilities.ts`.
+
+1. Domain code never calls `console`, `process.stdin`, `Math.random`, `Date.now`, `fetch` or the filesystem directly. It declares narrow capabilities and receives them as a parameter:
+
+```typescript
+interface Console<F extends Kind> {
+  readonly putStrLn: (message: string) => HKT<F, void>;
+  readonly getStrLn: HKT<F, string>;
+}
+type Main<F extends Kind> = Monad<F> & Console<F> & Random<F>;
+const program = <F extends Kind>(F: Main<F>): HKT<F, void> => /* written once */;
+```
+
+2. Capabilities compose by intersection (`Monad<F> & Console<F> & Random<F>`); a program asks for exactly the set it uses.
+3. Write the program once; interpret it at the edge. Production supplies a `Task<A> = () => Promise<A>` interpreter and runs it exactly once (`await main()`); tests supply a pure state-threading interpreter (`State<S, A> = (s: S) => readonly [A, S]`) over immutable input/output/random queues and assert the whole recorded output with `deepEqual` — no mocks, no I/O, fully deterministic.
+4. Higher-kinded types need no library: a registry `interface Kinds<A> { readonly Task: Task<A>; readonly Test: State<TestData, A> }` with `type HKT<F extends keyof Kinds<unknown>, A> = Kinds<A>[F]`. Use this generic form when two or more real interpreters exist; with one, inject a plain record of functions (`interface Clock { readonly now: () => Date }`).
+5. Sequencing is `flatMap`; `tap` runs an effect for its side effect and keeps the original value. A `Promise` return type alone does not make a computation pure — the effect is pure only while it is an unexecuted description.
+
+## Recursion and Parsing
+
+1. Repetition over effects is recursion, not `while`: a re-prompt, retry or game loop returns the same effect again (`default: return shouldContinue(name)`; `again ? gameLoop(name) : of(undefined)`).
+2. Parse, don't validate: raw input becomes `Option`/`Either` at the boundary (`parseInteger: (s: string) => Option<number>`) and is consumed exactly once with an exhaustive `switch` on its tag (a `fold`). Downstream code never re-checks the raw value.
