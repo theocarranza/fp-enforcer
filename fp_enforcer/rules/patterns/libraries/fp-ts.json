@@ -1,0 +1,24 @@
+{
+  "library": "fp-ts",
+  "language": "typescript",
+  "suffixes": [".ts", ".tsx"],
+  "exclude_suffixes": [".d.ts"],
+  "patterns": [
+    {"id": "fp-ts-deprecated-monoid", "regex": "\\b(?:getStructMonoid|getFirstMonoid|getLastMonoid|getApplyMonoid)\\b", "message": "deprecated fp-ts monoid API: use M.struct, O.getMonoid(Sg.first()), O.getMonoid(Sg.last()), getApplicativeMonoid(O.Applicative)", "rule": "fp-core algebra 6-7"},
+    {"id": "fp-ts-deprecated-fold", "regex": "\\b(?:M|Monoid)\\.fold\\s*\\(|import\\s*\\{[^}]*\\bfold\\b[^}]*\\}\\s*from\\s*[\"']fp-ts/Monoid[\"']", "message": "Monoid.fold is deprecated: use concatAll(M) — fold from empty", "rule": "fp-core algebra 5"}
+  ],
+  "self_test": {
+    "violations": [
+      "const MPoint = getStructMonoid({ x: N.MonoidSum, y: N.MonoidSum });",
+      "const MLast = O.getLastMonoid<number>();",
+      "const total = M.fold(N.MonoidSum)([1, 2, 3]);",
+      "import { fold } from 'fp-ts/Monoid'"
+    ],
+    "clean": [
+      "const MPoint = M.struct({ x: N.MonoidSum, y: N.MonoidSum });",
+      "const MLast = O.getMonoid<number>(Sg.last());",
+      "const total = M.concatAll(N.MonoidSum)([1, 2, 3]);",
+      "const shown = pipe(option, O.fold(() => 'none', String));"
+    ]
+  }
+}

@@ -94,6 +94,17 @@ class RunTests(unittest.TestCase):
                 self.assertTrue(item.path.is_file())
                 self.assertEqual(item.path.parent, learned_dir)
 
+    def test_run_activates_fp_ts_pack_for_fp_ts_project(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "package.json").write_text(
+                json.dumps({"dependencies": {"fp-ts": "^2.16.0"}}),
+                encoding="utf-8",
+            )
+            report = assimilate.run(root)
+            self.assertEqual(report.gate_failures, ())
+            self.assertEqual([item.pack_id for item in report.activated], ["fp-ts"])
+
     def test_run_with_no_libraries_activates_nothing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             report = assimilate.run(Path(tmp))

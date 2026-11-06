@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-11-06
+
+### Added
+
+- **Monoids are first-class.** New `fp-core` *Algebra* section (all languages): every aggregation is a
+  named monoid; associativity and two-sided identity are the contract; semigroups without a lawful
+  `empty`; laws proven on the real representation (float `+` is not associative); fold from `empty`;
+  derive record monoids field-wise and their duals; absence is an explicit choice of monoid
+  (first / last / applicative).
+- `fp-typescript` rule restructured into *Seams* (existing items 1–8 keep their numbers),
+  *Monoids*, *Effects as Capabilities* (program written once against intersected capability
+  interfaces, `Task` interpreter at the edge, pure `State` interpreter in tests, library-free HKT
+  registry) and *Recursion and Parsing*. All of it is plain TypeScript; no library required.
+- Runnable, strictly type-checked, library-agnostic references shipped under
+  `rules/examples/typescript/`: `monoids.ts`, `effects-as-capabilities.ts`, `lookup-tables.ts`
+  (vendored to `.fp-enforcer/rules/examples/typescript/`).
+- Library-specific renderings under `rules/libraries/fp-ts/` (`monoids.ts`, `to-the-max-1.ts`,
+  `to-the-max-2.ts`) using current fp-ts 2.16 names.
+- `tests/test_typescript_knowledge.py`: rule references resolve, examples run under Node ≥ 22.6,
+  and examples pass fp-enforcer's own scanner.
+
+- **Rules reach the agent's context on every host.** `wire --client claude` writes
+  `.claude/rules/*.md` (core always loaded; language rules scoped with `paths:` frontmatter,
+  mirroring Cursor's globs). `wire --client codex` writes a managed
+  `<!-- fp-enforcer:begin/end -->` block into `AGENTS.md`, preserving other content;
+  `uninstall` strips only that block.
+- TypeScript scanner checks for the new principles: `no-non-null-assertion`,
+  `no-ambient-effect` (`Math.random`, `Date.now`, `new Date()`, `console.*`, `process.*`
+  outside `fp-allow`-annotated edge interpreters) and `no-seedless-reduce`.
+- Curated `fp-ts` pattern pack (activated by `assimilate`): flags deprecated monoid APIs
+  (`getStructMonoid`, `getFirstMonoid`, `getLastMonoid`, `getApplyMonoid`, `Monoid.fold`).
+
+### Fixed
+
+- Stop hook crashed with `NameError: _DART_ANALYZE_TIMEOUT` whenever `dart` was installed and a
+  `.dart` file had changed, silently disabling the completion gate for Dart projects.
+
+### Changed
+
+- `no-for-loop` message now points to the recursion rule for effectful repetition.
+- `fp-ts` learn profile now maps the agnostic principles onto fp-ts APIs and documents the
+  deprecated → current renames (`getStructMonoid` → `struct`, `fold` → `concatAll`,
+  `getFirstMonoid`/`getLastMonoid` → `getMonoid(first()/last())`, `getApplyMonoid` →
+  `getApplicativeMonoid`).
+- Lookup-table guidance uses a named fallback entry instead of a non-null assertion (`!`).
+- `.gitignore` ignores a local `.venv/` (tests need `setuptools>=69`, newer than some system Pythons ship).
+
 ## [0.3.2] - 2026-08-09
 
 ### Fixed

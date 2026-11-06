@@ -17,6 +17,7 @@ from fp_enforcer.core import Violation
 _HARNESS_DIR = Path(__file__).resolve().parent / "harness"
 
 _EXPECTED_BY_FIXTURE: dict[str, frozenset[str]] = {
+    "ambient_effect.ts": frozenset({"no-ambient-effect"}),
     "async_void.dart": frozenset({"no-async-void"}),
     "either_unwrap.dart": frozenset({"fold-not-unwrap"}),
     "else_branch.dart": frozenset({"no-else"}),
@@ -32,8 +33,10 @@ _EXPECTED_BY_FIXTURE: dict[str, frozenset[str]] = {
         {"no-mutable-field", "no-reassignment", "no-collection-mutation"}
     ),
     "mutation.ts": frozenset({"no-collection-mutation", "no-field-write"}),
+    "non_null_assertion.ts": frozenset({"no-non-null-assertion"}),
     "or_fallback.ts": frozenset({"no-or-fallback"}),
     "replay_subject_unbounded.dart": frozenset({"no-unbounded-replay"}),
+    "seedless_reduce.ts": frozenset({"no-seedless-reduce"}),
     "stateful_widget.dart": frozenset({"no-stateful-widget"}),
     "throw_domain.dart": frozenset({"no-throw-domain"}),
     "throw_internal.ts": frozenset({"no-throw-internal"}),

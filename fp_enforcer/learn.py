@@ -116,36 +116,46 @@ PROFILES: dict[str, str] = {
 """,
     "fp-ts": """# FP-TS — Functional TypeScript Reference
 
+The principles (monoids, effects as capabilities, recursion, parsing) are library-agnostic and
+live in `.fp-enforcer/rules/fp-core.md` (Algebra) and `.fp-enforcer/rules/fp-typescript.md`.
+This profile maps them onto fp-ts 2.16+ APIs. Compiling, asserted examples:
+`.fp-enforcer/rules/libraries/fp-ts/` (`monoids.ts`, `to-the-max-1.ts`, `to-the-max-2.ts`).
+
 ## Types
 
 - **Either<E, A>**: typed errors; `left`/`right` constructors; primary railway type.
 - **Option<A>**: `some`/`none` instead of `null`/`undefined` in domain code.
-- **Task<A>**: lazy sync effect; **TaskEither<E, A>** for async IO with failure channel.
-- **Monoid<A>**: `{ concat: (x, y) => A; empty: A }` — algebraic aggregation with identity.
+- **Task<A>**: lazy async effect; **TaskEither<E, A>** for async IO with failure channel.
+- **State<S, A>**: `(s: S) => [A, S]` — the pure test interpreter for capability programs.
+- **Semigroup<A> / Monoid<A>**: `fp-ts/Semigroup`, `fp-ts/Monoid`; instances in `fp-ts/number`
+  (`MonoidSum`, `MonoidProduct`), `fp-ts/string` (`Monoid`), `fp-ts/boolean` (`MonoidAll`, `MonoidAny`).
 
 ## Operators
 
 - **pipe / flow**: left-to-right composition; `pipe(value, f, g, h)` replaces nested calls.
-- **flatMap / map / mapLeft / fold**: standard railway operators; `fold` is the only exit.
-- **getStructMonoid**: derive a monoid for records — field-wise `concat` with defaults.
-- **getLastMonoid**: last-write-wins merge for settings/overrides.
-- **concatAll / fold (Monoid)**: replace accumulator loops with `concat` chains ending at `empty`.
+- **flatMap / map / mapLeft / match**: standard railway operators; `match` (alias `fold`) is the only exit.
+- **Do / apS / bind**: accumulate named results — `pipe(T.Do, T.apS('secret', random), T.apS('guess', ask(q)), T.flatMap(({ secret, guess }) => ...))`.
+- **tap** (generic: `chainFirst` from `fp-ts/Chain`): run an effect, keep the original value.
+- **M.struct** (was `getStructMonoid`), **M.concatAll** (was `M.fold`).
+- **Option monoids**: `O.getMonoid(Sg.first())` (was `getFirstMonoid`), `O.getMonoid(Sg.last())`
+  (was `getLastMonoid`), `getApplicativeMonoid(O.Applicative)(M)` (was `getApplyMonoid`).
 
 ## Composition idioms
 
-- Validation: `pipe(input, validateName, flatMap(validateAge), flatMap(save))`.
-- Monoid aggregation: `pipe(items, concatAll(monoid), normalize)` instead of `for (const x of items) acc = ...`.
-- Struct settings merge: `pipe(defaults, concat(getStructMonoid({...})(partial)))`.
-- TaskEither pipeline: `pipe(task, flatMap(fetch), map(parse), mapLeft(toDomainError))` then `run()` at handler edge.
+- Validation: `pipe(input, validateName, E.flatMap(validateAge), E.flatMap(save))`.
+- Aggregation: `M.concatAll(monoid)(items)` instead of an accumulator loop.
+- Settings override: `M.struct({ fontSize: O.getMonoid<number>(Sg.last()), ... }).concat(workspace, user)`.
+- Tagless final: capabilities `Console<F extends URIS>` etc. over `Kind<F, A>` from `fp-ts/HKT`;
+  production `{ ...T.Monad, ... }`, tests `{ ...S.Monad, URI: 'Test', ... }` with a
+  `declare module 'fp-ts/HKT'` entry for the test URI.
+- TaskEither pipeline: `pipe(task, TE.flatMap(fetch), TE.map(parse), TE.mapLeft(toDomainError))`, run at the handler edge.
 
 ## Do / Don't
 
-- **Do** use `pipe` for every multi-step transform; extract named functions when a step exceeds one expression.
-- **Do** model aggregations with `Monoid` — define `concat` + `empty`, then `fold` or `concatAll`.
-- **Do** use `getLastMonoid` when later values override earlier ones (config patches, feature flags).
-- **Don't** use `if/else` ladders for validation; chain `flatMap` and let the first `left` short-circuit.
-- **Don't** unwrap `Either` with type guards; always `fold`.
-- **Don't** mutate external state inside `map`; return new values.
+- **Do** use library instances (`N.MonoidSum`, `M.struct`) rather than re-declaring them.
+- **Do** prefer the current names above; the old ones are deprecated.
+- **Don't** unwrap `Either`/`Option` with type guards; always `match`.
+- **Don't** import `fp-ts/lib/...` paths in new code; use the package root modules (`fp-ts/Option`).
 """,
     "effect": """# Effect — TypeScript Effect System Reference
 

@@ -30,6 +30,16 @@ All code is functional by default. Apply these rules autonomously to every gener
  4. Prefer higher-order collection methods (`map`, `where`/`filter`, `fold`, `expand`) over imperative loops.
  5. Do pass functions as arguments; compose small functions into pipelines.
 
+## Algebra (Monoids Are Foundational)
+
+1. Every aggregation is a monoid. Whenever values of one type are combined — sums, merges, unions, overrides, validations, logs — name the combining operation `concat` and its identity `empty`. An accumulator loop is an unnamed monoid; name it.
+2. The laws are the contract: `concat` is associative (`concat(concat(x, y), z) = concat(x, concat(y, z))`) and `empty` is a two-sided identity (`concat(empty, x) = x = concat(x, empty)`). If an identity exists it is unique. An instance that breaks a law is a bug, not a style issue.
+3. Not every semigroup is a monoid. If no lawful `empty` exists (e.g. joining strings with a separator), stay at semigroup and fold only non-empty collections.
+4. Prove the laws on the real representation. Floating-point addition is not associative; integer arithmetic is lawful only while results stay exact; use exact domains (bigint, integer cents, rationals) when the laws must hold.
+5. Fold collections from `empty` (`concatAll`): no seed argument, and the empty collection is handled by construction.
+6. Derive, don't hand-write: a record is a monoid when each field is (combine field-wise); structures nest (`Point` → `Vector`). Every operation has a dual (flip the arguments).
+7. Absence is a choice of monoid. Combining optional values must name its semantics: **first** (leftmost present wins), **last** (rightmost present wins — overrides, patches, settings layers), or **applicative** (any absence absorbs; both present → combine payloads, identity `some(empty)`). Never merge optionals with ad-hoc conditionals.
+
 ## Shape & Size
 
  1. If a function does more than one thing, refactor. When a body grows past ~6 lines or one `fold`, extract a tiny private helper whose name describes the step — the name is the comment.
