@@ -7,15 +7,28 @@ import sys
 from pathlib import Path
 
 from fp_enforcer import assimilate, learn, validate
+from fp_enforcer.core import PatternPack, Violation
+
+
+def _packs_from(patterns_dir: str | None) -> tuple[PatternPack, ...]:
+    match patterns_dir:
+        case None:
+            return validate.load_packs(validate.default_patterns_dir())
+        case custom:
+            return validate.load_packs(Path(custom))
+
+
+def _exit_code_for(violations: tuple[Violation, ...]) -> int:
+    match violations:
+        case ():
+            return 0
+        case _:
+            print(validate.format_report(violations))
+            return 1
 
 
 def _cmd_validate(args: argparse.Namespace) -> int:
-    patterns_dir = (
-        Path(args.patterns_dir)
-        if args.patterns_dir is not None
-        else validate.default_patterns_dir()
-    )
-    packs = validate.load_packs(patterns_dir)
+    packs = _packs_from(args.patterns_dir)
     match args.diff:
         case None:
             violations = validate.scan_paths(packs, tuple(Path(p) for p in args.paths))
@@ -26,12 +39,14 @@ def _cmd_validate(args: argparse.Namespace) -> int:
                 else Path(diff_arg).read_text(encoding="utf-8")
             )
             violations = validate.scan_diff(packs, diff_text)
-    match violations:
-        case ():
-            return 0
-        case _:
-            print(validate.format_report(violations))
-            return 1
+    return _exit_code_for(violations)
+
+
+def _cmd_scan_legacy(args: argparse.Namespace) -> int:
+    packs = _packs_from(args.patterns_dir)
+    return _exit_code_for(
+        validate.scan_paths(packs, tuple(Path(p) for p in args.paths))
+    )
 
 
 def _cmd_learn(args: argparse.Namespace) -> int:
@@ -86,6 +101,14 @@ def _build_parser() -> argparse.ArgumentParser:
     validate_parser.add_argument("--diff")
     validate_parser.add_argument("--patterns-dir")
     validate_parser.set_defaults(handler=_cmd_validate)
+
+    scan_legacy_parser = subparsers.add_parser(
+        "scan-legacy",
+        help="scan whole files, including legacy code that the hooks skip",
+    )
+    scan_legacy_parser.add_argument("paths", nargs="+")
+    scan_legacy_parser.add_argument("--patterns-dir")
+    scan_legacy_parser.set_defaults(handler=_cmd_scan_legacy)
 
     learn_parser = subparsers.add_parser("learn")
     learn_parser.add_argument("--dest", required=True)

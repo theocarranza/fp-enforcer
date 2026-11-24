@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping
+from functools import reduce
 from pathlib import Path
+from types import MappingProxyType
 
 from fp_enforcer.core import Pattern, PatternPack, Violation
 
@@ -313,6 +316,100 @@ def scan_diff(
     for line in diff_text.splitlines():
         state = _process_diff_line(state, line, packs)
     return _dedupe(state[2])
+
+
+_HUNK_RANGE = re.compile(r"^@@ -\d+(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
+
+
+def _count_or_one(raw: str | None) -> int:
+    match raw:
+        case None:
+            return 1
+        case _:
+            return int(raw)
+
+
+def _parse_hunk_range(header: str) -> tuple[int, int, int] | None:
+    match _HUNK_RANGE.match(header):
+        case None:
+            return None
+        case found:
+            return (
+                int(found.group(2)),
+                _count_or_one(found.group(3)),
+                _count_or_one(found.group(1)),
+            )
+
+
+def _new_side_path(header: str) -> str | None:
+    match header[4:].split("\t", 1)[0]:
+        case path if path.startswith("b/"):
+            return path[2:]
+        case _:
+            return None
+
+
+def _hunk_entries(
+    path: str | None, start: int, count: int
+) -> tuple[tuple[str, frozenset[int]], ...]:
+    match path:
+        case None:
+            return ()
+        case str() as name:
+            return ((name, frozenset(range(start, start + count))),)
+
+
+ChangedState = tuple[str | None, int, tuple[tuple[str, frozenset[int]], ...]]
+
+
+def _open_hunk(state: ChangedState, header: str) -> ChangedState:
+    path, _, entries = state
+    match _parse_hunk_range(header):
+        case None:
+            return state
+        case (start, added, removed):
+            return (path, added + removed, entries + _hunk_entries(path, start, added))
+
+
+def _step_changed(state: ChangedState, line: str) -> ChangedState:
+    """Hunk bodies are skipped by count, so a body line that looks like a header stays in the hunk."""
+    path, pending, entries = state
+    match line:
+        case _ if pending > 0 and line[:1] in ("+", "-", " "):
+            return (path, pending - 1, entries)
+        case _ if line.startswith("diff --git "):
+            return (None, 0, entries)
+        case _ if line.startswith("+++ "):
+            return (_new_side_path(line), 0, entries)
+        case _ if line.startswith("@@"):
+            return _open_hunk(state, line)
+        case _:
+            return state
+
+
+def _merge_entries(
+    entries: tuple[tuple[str, frozenset[int]], ...],
+) -> Mapping[str, frozenset[int]]:
+    return MappingProxyType(
+        {
+            name: frozenset().union(
+                *(lines for other, lines in entries if other == name)
+            )
+            for name in dict.fromkeys(other for other, _ in entries)
+        }
+    )
+
+
+def changed_lines(diff_text: str) -> Mapping[str, frozenset[int]]:
+    return _merge_entries(
+        reduce(_step_changed, diff_text.splitlines(), (None, 0, ()))[2]
+    )
+
+
+def filter_violations(
+    violations: tuple[Violation, ...], lines: frozenset[int]
+) -> tuple[Violation, ...]:
+    return tuple(violation for violation in violations if violation.line in lines)
 
 
 def format_report(violations: tuple[Violation, ...]) -> str:
