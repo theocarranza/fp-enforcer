@@ -384,5 +384,189 @@ class MultiPackScanTests(unittest.TestCase):
             self.assertEqual(pack.patterns[0].id, "p")
 
 
+class ChangedLinesTests(unittest.TestCase):
+    def test_hunk_with_count_yields_range(self) -> None:
+        diff = "\n".join(
+            [
+                "+++ b/lib/a.dart",
+                "@@ -3,2 +5,3 @@",
+            ]
+        )
+        self.assertEqual(
+            dict(validate.changed_lines(diff)),
+            {"lib/a.dart": frozenset({5, 6, 7})},
+        )
+
+    def test_hunk_without_count_yields_single_line(self) -> None:
+        diff = "\n".join(
+            [
+                "+++ b/lib/a.dart",
+                "@@ -3 +5 @@",
+            ]
+        )
+        self.assertEqual(
+            dict(validate.changed_lines(diff)),
+            {"lib/a.dart": frozenset({5})},
+        )
+
+    def test_pure_deletion_hunk_adds_no_lines(self) -> None:
+        diff = "\n".join(
+            [
+                "+++ b/lib/a.dart",
+                "@@ -4,2 +3,0 @@",
+            ]
+        )
+        self.assertEqual(
+            dict(validate.changed_lines(diff)),
+            {"lib/a.dart": frozenset()},
+        )
+
+    def test_multiple_hunks_in_one_file_are_unioned(self) -> None:
+        diff = "\n".join(
+            [
+                "+++ b/lib/a.dart",
+                "@@ -2,2 +2,2 @@ a",
+                "@@ -6,0 +7,2 @@ f",
+            ]
+        )
+        self.assertEqual(
+            dict(validate.changed_lines(diff)),
+            {"lib/a.dart": frozenset({2, 3, 7, 8})},
+        )
+
+    def test_multiple_files_and_new_file(self) -> None:
+        diff = "\n".join(
+            [
+                "--- a/lib/gone.dart",
+                "+++ /dev/null",
+                "@@ -1 +0,0 @@",
+                "-x",
+                "--- /dev/null",
+                "+++ b/lib/new.dart",
+                "@@ -0,0 +1,3 @@",
+                "--- a/lib/old.dart",
+                "+++ b/lib/old.dart",
+                "@@ -10 +10,2 @@",
+            ]
+        )
+        self.assertEqual(
+            dict(validate.changed_lines(diff)),
+            {
+                "lib/new.dart": frozenset({1, 2, 3}),
+                "lib/old.dart": frozenset({10, 11}),
+            },
+        )
+
+    def test_deleted_file_has_no_entry(self) -> None:
+        diff = "\n".join(
+            [
+                "+++ /dev/null",
+                "@@ -1,4 +0,0 @@",
+                "-a",
+            ]
+        )
+        self.assertEqual(dict(validate.changed_lines(diff)), {})
+
+    def test_trailing_tab_after_path_is_stripped(self) -> None:
+        diff = "+++ b/lib/spaced name.dart\t\n@@ -1 +2 @@\n"
+        self.assertEqual(
+            dict(validate.changed_lines(diff)),
+            {"lib/spaced name.dart": frozenset({2})},
+        )
+
+    def test_added_line_starting_with_plus_plus_is_not_a_header(self) -> None:
+        diff = "\n".join(
+            [
+                "+++ b/lib/a.dart",
+                "@@ -1,0 +2 @@",
+                "+++ b/lib/fake.dart",
+            ]
+        )
+        self.assertEqual(
+            dict(validate.changed_lines(diff)),
+            {"lib/a.dart": frozenset({2})},
+        )
+
+    def test_empty_input_gives_empty_mapping(self) -> None:
+        self.assertEqual(dict(validate.changed_lines("")), {})
+
+    def test_real_git_zero_context_diff(self) -> None:
+        diff = "\n".join(
+            [
+                "diff --git a/added.dart b/added.dart",
+                "new file mode 100644",
+                "index 0000000..14883d4",
+                "--- /dev/null",
+                "+++ b/added.dart",
+                "@@ -0,0 +1,3 @@",
+                "+fresh1",
+                "+fresh2",
+                "+fresh3",
+                "diff --git a/gone.dart b/gone.dart",
+                "deleted file mode 100644",
+                "index 587be6b..0000000",
+                "--- a/gone.dart",
+                "+++ /dev/null",
+                "@@ -1 +0,0 @@",
+                "-x",
+                "diff --git a/lib.dart b/lib.dart",
+                "index 0fdf397..d082662 100644",
+                "--- a/lib.dart",
+                "+++ b/lib.dart",
+                "@@ -2,2 +2,2 @@ a",
+                "-b",
+                "-c",
+                "+B",
+                "+C",
+                "@@ -6,0 +7,2 @@ f",
+                "+new1",
+                "+new2",
+                "diff --git a/spaced name.dart b/spaced name.dart",
+                "index 2fa992c..5975685 100644",
+                "--- a/spaced name.dart\t",
+                "+++ b/spaced name.dart\t",
+                "@@ -1,0 +2 @@ keep",
+                "+changed",
+                "",
+            ]
+        )
+        self.assertEqual(
+            dict(validate.changed_lines(diff)),
+            {
+                "added.dart": frozenset({1, 2, 3}),
+                "lib.dart": frozenset({2, 3, 7, 8}),
+                "spaced name.dart": frozenset({2}),
+            },
+        )
+
+
+class FilterViolationsTests(unittest.TestCase):
+    def _violation(self, line: int, pattern_id: str) -> Violation:
+        return Violation(
+            path="lib/a.dart",
+            line=line,
+            pattern_id=pattern_id,
+            message="m",
+            rule="r",
+        )
+
+    def test_keeps_only_matching_lines_in_order(self) -> None:
+        violations = (
+            self._violation(5, "no-var"),
+            self._violation(1, "no-else"),
+            self._violation(7, "no-try"),
+            self._violation(2, "no-var"),
+        )
+        kept = validate.filter_violations(violations, frozenset({2, 5}))
+        self.assertEqual(
+            [(item.line, item.pattern_id) for item in kept],
+            [(5, "no-var"), (2, "no-var")],
+        )
+
+    def test_empty_line_set_keeps_nothing(self) -> None:
+        violations = (self._violation(1, "no-var"),)
+        self.assertEqual(validate.filter_violations(violations, frozenset()), ())
+
+
 if __name__ == "__main__":
     unittest.main()
