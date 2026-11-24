@@ -28,9 +28,25 @@ git diff | fp-enforcer validate --diff -
 fp-enforcer validate .
 ```
 
+**Whole files, legacy code included**
+
+```bash
+fp-enforcer scan-legacy path/to/file.ts src/
+```
+
+This is the explicit way to scan code the hooks skip: it reports every finding in each whole file, not only in changed lines.
+
 When installed in a target project, rules and pattern packs live under `<project>/.fp-enforcer/rules/`. Run commands from the project root so relative paths resolve correctly.
 
 If the `fp-enforcer` executable is not on PATH, run the vendored copy instead: `PYTHONPATH=.fp-enforcer python3 -m fp_enforcer validate ...`.
+
+## Hooks report only changed lines
+
+The edit hook and the completion gate (Stop) scan each touched file as a whole, then report only the findings on lines added or changed relative to the diff base. Findings on untouched legacy lines are not reported; run `fp-enforcer scan-legacy` to see them.
+
+- The diff base is `HEAD`, so uncommitted work is gated. To gate a whole branch, set `FP_ENFORCER_DIFF_BASE` to any git revision, for example `origin/main` or a merge-base SHA. The completion gate's list of changed files uses the same base.
+- An untracked (new) file counts as entirely new: all its findings are reported.
+- If git is unavailable, the file is outside a git repository, or the diff cannot be computed (for example a bad base), the edit hook scans the whole file. The completion gate falls back to the whole-file scan for a bad base; outside a git repository it has no change list and reports nothing.
 
 ## Reading the report
 

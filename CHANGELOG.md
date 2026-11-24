@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `fp-enforcer scan-legacy <paths...>` scans whole files, including legacy code the hooks skip.
+  It exits 1 with the report when there are findings and 0 otherwise. `--patterns-dir` is
+  accepted. No hook runs it.
+- `FP_ENFORCER_DIFF_BASE` sets the git revision the hooks diff against (default `HEAD`), so the
+  completion gate can cover a whole branch, for example `origin/main`.
+
 ### Changed
 
 - curl|bash installers and uninstallers default to the **latest release** (newest `v*` tag,
@@ -19,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   one-liners failed with `Remote branch master not found`. All references now use `main`.
 - CI ran on pushes to `master` only; it now runs on pushes to `main`.
 - `pyproject.toml` Changelog URL points at `main`.
+- The edit hook and the completion gate no longer report findings on lines the work did not add
+  or change (#12).
+- The completion gate lists untracked files relative to the repository root, so it also works
+  when the agent runs from a subdirectory.
 
 ## [0.3.3] - 2026-11-06
 
