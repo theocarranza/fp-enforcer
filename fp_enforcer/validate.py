@@ -318,7 +318,7 @@ def scan_diff(
     return _dedupe(state[2])
 
 
-_HUNK_RANGE = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
+_HUNK_RANGE = re.compile(r"^@@ -\d+(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
 
 
 def _count_or_one(raw: str | None) -> int:
@@ -329,20 +329,16 @@ def _count_or_one(raw: str | None) -> int:
             return int(raw)
 
 
-def _parse_hunk_range(header: str) -> tuple[int, int] | None:
+def _parse_hunk_range(header: str) -> tuple[int, int, int] | None:
     match _HUNK_RANGE.match(header):
         case None:
             return None
         case found:
-            return (int(found.group(1)), _count_or_one(found.group(2)))
-
-
-def _hunk_lines(header: str) -> frozenset[int]:
-    match _parse_hunk_range(header):
-        case None:
-            return frozenset()
-        case (start, count):
-            return frozenset(range(start, start + count))
+            return (
+                int(found.group(2)),
+                _count_or_one(found.group(3)),
+                _count_or_one(found.group(1)),
+            )
 
 
 def _new_side_path(header: str) -> str | None:
@@ -354,29 +350,39 @@ def _new_side_path(header: str) -> str | None:
 
 
 def _hunk_entries(
-    path: str | None, header: str
+    path: str | None, start: int, count: int
 ) -> tuple[tuple[str, frozenset[int]], ...]:
     match path:
         case None:
             return ()
         case str() as name:
-            return ((name, _hunk_lines(header)),)
+            return ((name, frozenset(range(start, start + count))),)
 
 
-def _step_changed(
-    state: tuple[str | None, bool, tuple[tuple[str, frozenset[int]], ...]],
-    line: str,
-) -> tuple[str | None, bool, tuple[tuple[str, frozenset[int]], ...]]:
-    path, in_hunk, entries = state
+ChangedState = tuple[str | None, int, tuple[tuple[str, frozenset[int]], ...]]
+
+
+def _open_hunk(state: ChangedState, header: str) -> ChangedState:
+    path, _, entries = state
+    match _parse_hunk_range(header):
+        case None:
+            return state
+        case (start, added, removed):
+            return (path, added + removed, entries + _hunk_entries(path, start, added))
+
+
+def _step_changed(state: ChangedState, line: str) -> ChangedState:
+    """Hunk bodies are skipped by count, so a body line that looks like a header stays in the hunk."""
+    path, pending, entries = state
     match line:
+        case _ if pending > 0 and line[:1] in ("+", "-", " "):
+            return (path, pending - 1, entries)
         case _ if line.startswith("diff --git "):
-            return (None, False, entries)
-        case _ if line.startswith("--- "):
-            return (path, False, entries)
-        case _ if line.startswith("+++ ") and not in_hunk:
-            return (_new_side_path(line), False, entries)
+            return (None, 0, entries)
+        case _ if line.startswith("+++ "):
+            return (_new_side_path(line), 0, entries)
         case _ if line.startswith("@@"):
-            return (path, True, entries + _hunk_entries(path, line))
+            return _open_hunk(state, line)
         case _:
             return state
 
@@ -396,7 +402,7 @@ def _merge_entries(
 
 def changed_lines(diff_text: str) -> Mapping[str, frozenset[int]]:
     return _merge_entries(
-        reduce(_step_changed, diff_text.splitlines(), (None, False, ()))[2]
+        reduce(_step_changed, diff_text.splitlines(), (None, 0, ()))[2]
     )
 
 

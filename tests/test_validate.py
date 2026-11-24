@@ -421,6 +421,25 @@ class ChangedLinesTests(unittest.TestCase):
             {"lib/a.dart": frozenset()},
         )
 
+    def test_removed_and_added_lines_that_look_like_headers_stay_in_the_hunk(self) -> None:
+        diff = "\n".join(
+            [
+                "diff --git a/lib/a.sql b/lib/a.sql",
+                "--- a/lib/a.sql",
+                "+++ b/lib/a.sql",
+                "@@ -2 +2 @@",
+                "--- old comment",
+                "+++ new comment",
+                "@@ -9 +9 @@",
+                "-x",
+                "+y",
+            ]
+        )
+        self.assertEqual(
+            dict(validate.changed_lines(diff)),
+            {"lib/a.sql": frozenset({2, 9})},
+        )
+
     def test_multiple_hunks_in_one_file_are_unioned(self) -> None:
         diff = "\n".join(
             [
@@ -444,9 +463,15 @@ class ChangedLinesTests(unittest.TestCase):
                 "--- /dev/null",
                 "+++ b/lib/new.dart",
                 "@@ -0,0 +1,3 @@",
+                "+a",
+                "+b",
+                "+c",
                 "--- a/lib/old.dart",
                 "+++ b/lib/old.dart",
                 "@@ -10 +10,2 @@",
+                "-x",
+                "+y",
+                "+z",
             ]
         )
         self.assertEqual(

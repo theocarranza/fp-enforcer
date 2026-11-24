@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI ran on pushes to `master` only; it now runs on pushes to `main`.
 - `pyproject.toml` Changelog URL points at `main`.
 - The edit hook and the completion gate no longer report findings on lines the work did not add
-  or change (#12).
+  or change.
 - The completion gate lists untracked files relative to the repository root, so it also works
   when the agent runs from a subdirectory.
 

@@ -109,7 +109,8 @@ interpreter), recursion instead of loops, and parse-don't-validate.
 **Hooks** scan every edit and gate completion (Stop) with the pattern packs in
 `rules/patterns/`, and report only findings on lines added or changed against `HEAD` (set
 `FP_ENFORCER_DIFF_BASE` to another revision, for example `origin/main`; untracked files count as
-new). `fp-enforcer scan-legacy <paths>` scans whole files on demand. TypeScript checks include `no-let`, `no-else`, `no-or-fallback`,
+new). `fp-enforcer scan-legacy <paths>` scans whole files on demand. TypeScript checks include
+`no-let`, `no-else`, `no-or-fallback`,
 `no-for-loop`, `no-non-null-assertion`, `no-ambient-effect` (`Math.random`, `Date.now`,
 `console.*`, `process.*` outside edge interpreters) and `no-seedless-reduce`. `assimilate`
 adds curated library packs (`dart3`, `rxjs`, `fp-ts`). Justified edge cases are waived per
